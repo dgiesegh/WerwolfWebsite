@@ -18,7 +18,9 @@ function updateMenuColumnUI() {
     let htmlString = "";
     for (let id=1; id<=globalGameState.getNumPlayers(); id++) {
         let player = globalGameState.getPlayerWithId(id);
-        htmlString += "<div class=\"player\" id=\"Player"+id+"\"> <input type=\"text\" class=\"name\" value=\""+player.name+"\" onchange=\"updateNameUI(this)\" ";
+        htmlString += "<div class=\"player\" id=\"Player"+id+"\"";
+		if (player.hasProperty("dead")) {htmlString += " style=\"background-color: crimson\"";}
+		htmlString += "> <input type=\"text\" class=\"name\" value=\""+player.name+"\" onchange=\"updateNameUI(this)\" ";
 		if (globalGameRunning) {htmlString += "readonly";}
 		htmlString += "> <a href=\"#\" class=\"deleteplayer\" onclick=\"";
 		if (!globalGameRunning) {htmlString += "removePlayerUI(this)";}
@@ -174,7 +176,6 @@ Triggers when a button in the game window is pressed. Handles game start, end an
 */
 function selectGameOptionUI(btn) {
 	if (btn.id == "startGame") {
-		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameState.startGame();
 		return;
 	} else if (btn.id == "endGame") {

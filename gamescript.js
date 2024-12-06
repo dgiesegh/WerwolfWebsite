@@ -25,7 +25,8 @@ class Player {
             "dead": "Tot",
             "isWerewolf": "Ist Werwolf",
 			"attackedByWerewolf": "Vom Wolf angegriffen",
-			"gettingHanged": "Wird gehängt"
+			"gettingHanged": "Wird gehängt",
+			"blessed": "Gesegnet"
 			};
     }
 
@@ -109,14 +110,20 @@ class Player {
 	Most relevant player state modifications should thus go here, not in GameState.
 	*/
 	updateProperties() {
+		//Werwolf attack
 		if (this.hasProperty("attackedByWerewolf")) {
+			if (!this.hasProperty("blessed")) {
+				this.addProperty("dead");
+			}
 			this.removeProperty("attackedByWerewolf");
-			this.addProperty("dead");
 		}
+		//Hanging
 		if (this.hasProperty("gettingHanged")) {
 			this.removeProperty("gettingHanged");
 			this.addProperty("dead");
 		}
+		//All properties that get removed at end of night/day
+		this.removeProperty("blessed");
 	}
 }
 
@@ -136,7 +143,7 @@ class GameState {
             "villagers": "Anzahl Dorfbewohner" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["werewolves1", "werewolves2", "nightCleanup", "day1", "day2", "dayCleanup"]
+		this.states = ["priest1", "priest2", "werewolves1", "werewolves2", "nightCleanup", "day1", "day2", "dayCleanup"]
     }
 	
 	// Misc
@@ -210,6 +217,22 @@ class GameState {
     }
 	
 	/*
+	Returns player id(s) with specified role, false if no players are found.
+	*/
+	getPlayersWithRole(role) {
+		let ids = [];
+		for (let p of this.players) {
+			if (p.mainRole == role || p.sideRole == role) {
+				ids.push(p.id);
+			}
+		}
+		if (ids.length == 0) {
+			return false;
+		}
+		return ids;
+	}
+	
+	/*
 	Updates player name and role given by id as well as game variables.
 	*/
     updatePlayerNameAndRole(id, newName, newMainRole, newSideRole) {
@@ -254,7 +277,16 @@ class GameState {
 			window.alert("Mindestens ein Werwolf erforderlich!");
 			return false;
 		}
-		
+		const roles = [];
+		for (let p of this.players) {
+			if (p.mainRole != "Dorfbewohner" && p.mainRole != "Werwolf") {roles.push(p.mainRole);}
+			if (p.sideRole != "Keine Nebenrolle") {roles.push(p.sideRole);}
+		}
+		const duplicates = roles.filter((item, index) => roles.indexOf(item) != index);
+		if (duplicates.length != 0) {
+			window.alert("Doppelte Rollen: "+ roles.toString());
+			return false;
+		}
 		return true;
 	}
 	
@@ -263,6 +295,7 @@ class GameState {
 	*/
 	startGame() {
 		if (!this.checkGameStartConditions()) {return;}
+		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameRunning = true;
 		updateMenuColumnUI();
 		this.advanceState();
@@ -287,6 +320,11 @@ class GameState {
 	*/
 	callState() {
 		switch(this.currentState) {
+			case "priest1":
+			  globalGameHistory.saveState();
+			  globalRoleManager.priest(1); break;
+			case "priest2":
+			  globalRoleManager.priest(2); break;
 			case "werewolves1":
 			  globalGameHistory.saveState();
 			  globalRoleManager.werewolves(1); break;
@@ -412,9 +450,9 @@ class RoleManager {
 	*/
 	discussion(iteration) {
 		if (iteration == 1) {
-			let names = [];
+			const names = [];
 			let names_s = "";
-			let ids = [];
+			const ids = [];
 			for (let i = 1; i<=globalGameState.getNumPlayers(); i++) {
 				let p = globalGameState.getPlayerWithId(i);
 				if (!p.hasProperty("dead")) {
@@ -436,12 +474,12 @@ class RoleManager {
 	}
 	
 	/*
-	Werewolves
+	Werwölfe
 	*/
 	werewolves(iteration) {
 		if (iteration == 1) {
-			let names = [];
-			let ids = [];
+			const names = [];
+			const ids = [];
 			let werewolves = "";
 			for (let i = 1; i<=globalGameState.getNumPlayers(); i++) {
 				let p = globalGameState.getPlayerWithId(i);
@@ -460,6 +498,42 @@ class RoleManager {
 			globalGameState.advanceState();
 		}
 	}
+	
+	/*
+	Priester
+	*/
+	priest(iteration) {
+		let priest_id = -1;
+		if (!(priest_id = globalGameState.getPlayersWithRole("Priester"))) {
+			globalGameState.advanceState();
+			return;
+		}
+		let priest = globalGameState.getPlayerWithId(priest_id);
+		if (iteration == 1) {
+			if (priest.hasProperty("dead")) {
+				updateGameScreenUI("Priester ("+priest.name+")", "Der Priester ist leider schon tot.", ["OK"], [-1]);
+				return;
+			}
+			const names = [];
+			const ids = [];
+			for (let i = 1; i <= globalGameState.getNumPlayers(); i++) {
+				let p = globalGameState.getPlayerWithId(i);
+				if (!p.hasProperty("dead") && i != priest_id) {
+					ids.push(i);
+					names.push(p.name);
+				}
+			}
+			names.push("Keines"); ids.push(-1);
+			updateGameScreenUI("Priester ("+priest.name+")", "Welches Haus wird gesegnet?", names, ids);
+		} else if (iteration == 2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id != -1) {
+				globalGameState.getPlayerWithId(id).addProperty("blessed");
+			}
+			globalGameState.advanceState();
+		}
+	}
+	
 }
 
 /*
