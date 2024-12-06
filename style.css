@@ -1,0 +1,250 @@
+ * {
+    font-family: 'Times New Roman', Times, serif;
+ }
+
+ html, body {
+   height: 100%;
+ }
+
+ .playercolumn {
+    width: 300px;
+    border-right: 2px solid black;
+    position: fixed;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: gray;
+ }
+
+ .gamescreen {
+    position: fixed;
+    left: 302px;
+    width: calc(100vw - 302px);
+    background-color: cadetblue;
+    top: 0;
+    height: 100%;
+    overflow: auto;
+ }
+
+ .mainrolemenu, .siderolemenu {
+   position: fixed;
+   left: 302px;
+   width: calc(100vw - 302px);
+   background-color: white;
+   top: 0;
+   height: 100%;
+   overflow: auto;
+   display: none;
+ }
+
+ .mainrolemenu a, .siderolemenu a {
+   display: block;
+   float: left;
+   height: 270px;
+   width: 162px;
+   margin: 10px;
+ }
+
+ .playercolumn .title {
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid black;
+}
+
+ .playercolumn .title h3 {
+    color: rgb(231, 25, 25);
+    font-size: 35px;
+    margin: 15px 0px 10px 0px;
+ }
+
+ .playercolumn .title a {
+    text-align: center;
+ }
+
+ .playercolumn .playermenu {
+    height: 100%;
+ }
+
+ .playercolumn .playermenu .columnselect {
+    height: 36px;
+ }
+
+#displayplayers {
+    border-right: 1px solid black;
+}
+
+ .playercolumn .playermenu .columnselect a:link, a:visited {
+    float: left;
+    text-align: center;
+    height: 35px;
+    line-height: 35px;
+    border-bottom: 1px solid black;
+    margin: 0px;
+    width: 149.5px;
+    text-decoration: none;
+    color: black;
+    font-size: 1.5em;
+ }
+
+ .playercolumn .playermenu .columnselect a:hover {
+    background-color: rgb(156, 156, 156);
+ }
+
+ .playercolumn .playermenu .columnselect a:active {
+    background-color: lightgray;
+ }
+
+ .playercolumn .playermenu .menubuttons {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    height: 105px;
+}
+
+ .playercolumn .playermenu .menubuttons a:link, a:visited {
+    text-decoration: none;
+    float: left;
+    margin: 5px 20px;
+    background-color: lightgray;
+    color: black;
+    text-align: center;
+    width: 260px;
+    height: 25px;
+    line-height: 25px;
+	font-size: 1.1em;
+}
+
+ .playercolumn .playermenu .menubuttons a:hover {
+    background-color: gainsboro;
+}
+ .playercolumn .playermenu .menubuttons a:active {
+    background-color: white;
+}
+
+ .playercolumn .playermenu .playerlist {
+    border-top: 1px dashed black;
+    padding-top: 5px;
+    height: calc(100% - 265px);
+    overflow: auto;
+ }
+
+ .playercolumn .playermenu .playerlist .player {
+    float:left;
+    margin: 5px 20px;
+    text-align: center;
+    background-color: lightgray;
+    padding: 5px 10px;
+    width: 240px;
+	font-size: 1em;
+	line-height: 1.4;
+ }
+ 
+ .playercolumn .playermenu .playerlist .player .name {
+	font-size: 1em;
+	width: 190px;
+ }
+
+ .playercolumn .playermenu .playerlist .player a.deleteplayer:link, a.deleteplayer:visited {
+    text-decoration: none;
+    color: red;
+    border: 1px solid red;
+    padding: 0px 2px;
+	font-size: 1.1em;
+  }
+ .playercolumn .playermenu .playerlist .player a.deleteplayer:hover {
+    background-color: red;
+    color: lightgray;
+ }
+ .playercolumn .playermenu .playerlist .player a.deleteplayer:active {
+    background-color: black;
+    border-color: black;
+ }
+
+ .playercolumn .playermenu .playerlist .player .extrainfo {
+    text-align: center;
+    margin-top: 5px;
+    display: none;
+ }
+
+ .playercolumn .playermenu .gameinfo {
+    text-align: center;
+    height: calc(100% - 140px);
+    padding-top: 25px;
+    line-height: 25px;
+    font-size: 1.5em;
+    display: none;
+    overflow: auto;
+ }
+
+ .gamescreen .backandabort {
+	 height: 50px;
+	 width: 600px;
+	 padding-top: 15px;
+	 margin: auto;
+	 text-align: center;
+	 visibility: hidden;
+ }
+ 
+ .gamescreen .backandabort a:link, a:visited {
+	 display: inline-block;
+	 height: 40px;
+	 line-height: 40px;
+	 text-decoration: none;
+	 color: black;
+	 width: 150px;
+	 margin: 0px 30px;
+	 background-color: lightgray;
+	 text-align: center;
+	 border-radius: 5px;
+	 border: 1px solid red;
+	 font-size: 1.3em;
+ }
+ 
+ .gamescreen .backandabort a:hover {
+	 background-color: gainsboro;
+ }
+ 
+ .gamescreen .backandabort a:active {
+	 background-color: white;
+ }
+ 
+ .gamescreen .gameheading {
+    text-align: center;
+    padding: 20px 0px;
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 2em;
+ }
+
+ .gamescreen .gamedesc {
+    text-align: center;
+    padding: 10px 0px;
+    font-size: 1.5em;
+ }
+
+ .gamescreen .gamebuttons {
+    padding: 10px 0px;
+ }
+
+ .gamescreen .gamebuttons a:link, a:visited {
+    display: block;
+    margin: auto;
+    text-decoration: none;
+    color: black;
+    width: 400px;
+    background-color: lightgray;
+    text-align: center;
+    height: 50px;
+    line-height: 50px;
+    margin-bottom: 20px;
+	margin-top: 5px;
+	border: 1px solid red;
+    border-radius: 5px;
+	font-size: 1.5em;
+ }
+
+ .gamescreen .gamebuttons a:hover {
+    background-color: gainsboro;
+ }
+ .gamescreen .gamebuttons a:active {
+    background-color: white;
+ }

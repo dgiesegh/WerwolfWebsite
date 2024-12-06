@@ -1,0 +1,90 @@
+ <!DOCTYPE html>
+ <html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="copyright" content="David Giesegh">
+        <title>Werwolf Companion</title>
+        <link rel="shortcut icon" href="Pictures/TitleLogo.png">
+        <link rel="stylesheet" href="style.css">
+        <script src="gamescript.js"></script>
+        <script src="uiscript.js"></script>
+    </head>
+
+    <body>
+        <div class="playercolumn">
+            <div class="title">
+                <h3>Werwolf</h3>
+                <a href="RoleDocumentation.txt">Documentation</a>
+            </div>
+            <div class="playermenu">
+                <div class="columnselect">
+                    <a href="#" id="displayplayers" onclick="togglePlayersInfoUI(this)">Spieler</a>
+                    <a href="#" id="displaystats" onclick="togglePlayersInfoUI(this)">Spielinfo</a>
+                </div>
+                <div class="menubuttons">
+                    <a href="#" id="addplayer" class="menubutton" onclick="addPlayerUI()">Spieler hinzufügen</a>
+                    <a href="#" id="clearplayers" class="menubutton" onclick="clearPlayersUI()">Alle löschen</a>
+                    <a href="#" id="showdetails" class="menubutton" onclick="playerDetailsUI()">Detailansicht</a>
+                </div>
+                <div class="playerlist">
+                </div>
+                <div class="gameinfo">
+                </div>
+            </div>
+        </div>
+        <div class="gamescreen">
+			<div class="backandabort">
+				<a href="#" onclick="returnUI()">Zurück</a>
+				<a href="#" onclick="abortUI()">Abbrechen</a>
+			</div>
+            <div class="gameheading">
+                Willkommen auf der Werwolf-Companion Website
+            </div>
+            <div class="gamedesc">
+                Bisher implementierte Rollen: Dorfbewohner, Werwölfe
+            </div>
+            <div class="gamebuttons">
+                <a href="#" onclick="selectGameOptionUI(this)" id="startGame">Spiel beginnen</a>
+            </div>
+        </div>
+        <div class="mainrolemenu">
+			<a href="#" onclick="selectRoleUI('Werwolf', true)"> <img src="Pictures/Werwolf2.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Alphawolf', true)"> <img src="Pictures/Alphawolf.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Schattenwolf', true)"> <img src="Pictures/Schattenwolf.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Schwein', true)"> <img src="Pictures/Schwein.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Werwolfwelpe', true)"> <img src="Pictures/Werwolfwelpe.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Räudiger Wolf', true)"> <img src="Pictures/RaeudigerWolf.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Fips', true)"> <img src="Pictures/Fips.png" height="270" width="162"> </a>
+            <a href="#" onclick="selectRoleUI('Dorfbewohner', true)"> <img src="Pictures/Dorfbewohner.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Hexe', true)"> <img src="Pictures/Hexe.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Priester', true)"> <img src="Pictures/Priester.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Seher', true)"> <img src="Pictures/Seher.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Nekromant', true)"> <img src="Pictures/Nekromant.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Kleines Mädchen', true)"> <img src="Pictures/KleinesMaedchen.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Dorfschlampe', true)"> <img src="Pictures/Dorfschlampe.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Obdachloser', true)"> <img src="Pictures/Obdachloser.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Beamter', true)"> <img src="Pictures/Beamter.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Fieselotte', true)"> <img src="Pictures/Fieselotte.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Doppelgänger', true)"> <img src="Pictures/Doppelgaenger.png" height="270" width="162"> </a>
+        </div>
+        <div class="siderolemenu">
+            <a href="#" onclick="selectRoleUI('Armbrust', false)"> <img src="Pictures/Armbrust.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Dichter', false)"> <img src="Pictures/Dichter.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Schweigetrank', false)"> <img src="Pictures/Schweigetrank.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Leichenfledderer', false)"> <img src="Pictures/Leichenfledderer.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Michi', false)"> <img src="Pictures/Michi.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Stein', false)"> <img src="Pictures/Stein.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Amulett', false)"> <img src="Pictures/Amulett.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Stärketrank', false)"> <img src="Pictures/Staerketrank.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Starker Magen', false)"> <img src="Pictures/StarkerMagen.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Ludwig', false)"> <img src="Pictures/Ludwig.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Adeliger', false)"> <img src="Pictures/VerschollenerAdeliger.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Pestkranker', false)"> <img src="Pictures/Pestkrank.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Liebestrank', false)"> <img src="Pictures/Liebestrank.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Hasstrank', false)"> <img src="Pictures/Hasstrank.png" height="270" width="162"> </a>
+			<a href="#" onclick="selectRoleUI('Holzwurm', false)"> <img src="Pictures/Holzwurm.png" height="270" width="162"> </a>
+        </div>
+    </body>
+
+</html>
