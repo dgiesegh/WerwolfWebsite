@@ -170,12 +170,15 @@ function updateGameScreenUI(heading, message, buttonNames, buttonIDs) {
 }
 
 /*
-Triggers when a button in the game window is pressed. Handles game start and option selections during the game.
+Triggers when a button in the game window is pressed. Handles game start, end and option selections during the game.
 */
 function selectGameOptionUI(btn) {
 	if (btn.id == "startGame") {
 		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameState.startGame();
+		return;
+	} else if (btn.id == "endGame") {
+		globalGameState.endGame();
 		return;
 	}
 	globalGameScreenSelectedBtnID_UI = btn.id;
