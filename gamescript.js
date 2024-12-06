@@ -1,5 +1,18 @@
+/*
+This script contains all game logic handled by four classes:
+Player - represents a single player
+GameState - contains most logic and represents the total state of a game
+RoleManager - contains the logic for the different roles (used to be part of GameState, only separated for clarity/better overview)
+GameHistory - saves the GameState during the game to allow to revert to previous states
+*/
+
+//globals
 let globalGameRunning = false;
 
+/*
+Class representing a single player.
+All statuses affecting a player are collected in "properties". Player ids start at 1, not 0.
+*/
 class Player {
 
     constructor(id, name) {
@@ -16,7 +29,10 @@ class Player {
 			};
     }
 
-    getReadableProperties() {
+    /*
+	Returns an array of formatted properties.
+	*/
+	getReadableProperties() {
         let rps = [];
         for (let prop of this.properties) {
             rps.push(this.readableNames[prop])
@@ -24,6 +40,9 @@ class Player {
         return rps;
     }
 	
+	/*
+	Updates name and roles depending on input and properties if necessary
+	*/
 	updateNameAndRole(newName, newMainRole, newSideRole) {
 		if (newName != "") {
             this.name = newName;
@@ -42,7 +61,6 @@ class Player {
             } else {
                 console.error("Invalid main role name in updateNameAndRole");
             }
-			globalGameState.updateGameVariables();
         }
         if (newSideRole != "") {
             if (globalRoleManager.sideRoles.includes(newSideRole)) {
@@ -53,27 +71,43 @@ class Player {
         }
 	}
 	
+	/*
+	Returns true if prop in properties, else false.
+	*/
 	hasProperty(prop) {
 		return this.properties.includes(prop);
 	}
 	
+	/*
+	Adds prop to properties if it doesn't exist yet.
+	*/
 	addProperty(prop) {
 		if (!this.hasProperty(prop)) {
 			this.properties.push(prop);
 		}
 	}
 	
+	/*
+	Removes prop from properties if it exists.
+	*/
 	removeProperty(prop) {
 		if (this.hasProperty(prop)) {
 			let i = this.properties.indexOf(prop);
 			this.properties.splice(i, 1);
 		}
 	}
-
+	
+	/*
+	Removes all properties.
+	*/
 	clearProperties() {
 		this.properties = [];
 	}
 	
+	/*
+	Is called once every night and day, updating player properties according to the game rules.
+	Most relevant player state modifications should thus go here, not in GameState.
+	*/
 	updateProperties() {
 		if (this.hasProperty("attackedByWerewolf")) {
 			this.removeProperty("attackedByWerewolf");
@@ -86,6 +120,10 @@ class Player {
 	}
 }
 
+/*
+Class fully specifying the unique state of the game and handling the game's logic.
+gameVariables contains game properties relevant to more than one player.
+*/
 class GameState {
 
     constructor() {
@@ -102,7 +140,10 @@ class GameState {
     }
 	
 	// Misc
-
+	
+	/*
+	Returns a dict of formatted game variables for the game info tab.
+	*/
     getReadableGameVariables() {
         let rgvs = {};
         for (let key in this.gameVariables) {
@@ -114,25 +155,37 @@ class GameState {
         }
         return rgvs;
     }
-
+	
+	/*
+	Returns the number of players.
+	*/
     getNumPlayers() {
         return this.players.length;
     }
 
     // Player manipulations
 	
+	/*
+	Adds a default player (Dorfbewohner, Keine Nebenrolle).
+	*/
 	addDefaultPlayer(name) {
         let newPlayer = new Player(this.getNumPlayers() + 1, name);
         this.players.push(newPlayer);
         this.gameVariables["villagers"] += 1;
     }
-
+	
+	/*
+	Removes all players.
+	*/
     clearPlayers() {
         this.players.splice(0, this.getNumPlayers());
         this.gameVariables["werewolves"] = 0;
         this.gameVariables["villagers"] = 0;
     }
-
+	
+	/*
+	Removes a single player identified by id.
+	*/
     removePlayer(id) {
         if (this.players[id-1].hasProperty("isWerewolf")) {
             this.gameVariables["werewolves"]--;
@@ -144,7 +197,10 @@ class GameState {
             this.players[i].id = i+1;
         }
     }
-
+	
+	/*
+	Returns the player with the given id.
+	*/
     getPlayerWithId(id) {
         if (id > 0 && id <= this.getNumPlayers()) {
             return this.players[id-1];
@@ -152,15 +208,22 @@ class GameState {
         console.error("Invalid player id.");
         return null;
     }
-
+	
+	/*
+	Updates player name and role given by id as well as game variables.
+	*/
     updatePlayerNameAndRole(id, newName, newMainRole, newSideRole) {
         console.log("Updating player", id, newName, newMainRole, newSideRole);
         let player = this.getPlayerWithId(id);
         player.updateNameAndRole(newName, newMainRole, newSideRole);
+		globalGameState.updateGameVariables();
     }
 	
 	//Game logic
 	
+	/*
+	Updates the game variables that can be inferred from the player list / game state (rn only werewolf/villager counts)
+	*/
 	updateGameVariables() {
 		this.gameVariables["werewolves"] = 0;
 		this.gameVariables["villagers"] = 0;
@@ -175,6 +238,9 @@ class GameState {
 		}
 	}
 	
+	/*
+	Checks if the game can be started (enough players, no role conflicts, ...)
+	*/
 	checkGameStartConditions() {
 		if (this.getNumPlayers() <= 0) {
 			window.alert("Zum Beginnen Spieler hinzufügen!");
@@ -192,6 +258,9 @@ class GameState {
 		return true;
 	}
 	
+	/*
+	Starts the game.
+	*/
 	startGame() {
 		if (!this.checkGameStartConditions()) {return;}
 		globalGameRunning = true;
@@ -199,6 +268,9 @@ class GameState {
 		this.advanceState();
 	}
 	
+	/*
+	Advances to the next state.
+	*/
 	advanceState() {
 		updateMenuColumnUI();
 		this.currentStateID += 1;
@@ -210,6 +282,9 @@ class GameState {
 		this.callState();
 	}
 	
+	/*
+	Calls the current state and saves the game state if applicable.
+	*/
 	callState() {
 		switch(this.currentState) {
 			case "werewolves1":
@@ -231,6 +306,9 @@ class GameState {
 		}
 	}
 	
+	/*
+	Checks if victory conditions are met (no werewolves/villagers remaining).
+	*/
 	checkVictory() {
 		if (this.gameVariables["werewolves"]==0) {
 			updateGameScreenUI("Die Dorfbewohner gewinnen!", "", ["OK"], ["endGame"]);
@@ -242,6 +320,9 @@ class GameState {
 		return false;
 	}
 	
+	/*
+	Ends the game. Resets game state, game window, player list and history.
+	*/
 	endGame() {
 		for (let p of this.players) {
 			p.clearProperties();
@@ -259,6 +340,9 @@ class GameState {
 	
 	// Night and day cleanups
 	
+	/*
+	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
+	*/
 	nightEnd() {
 		let aliveNames = "";
 		let killedNames = "";
@@ -284,6 +368,9 @@ class GameState {
 		}
 	}
 	
+	/*
+	What happens at the end of the day. Updates player properties, displays killed players, checks victory.
+	*/
 	dayEnd() {
 		let killedNames = "";
 		for (let p of this.players) {
@@ -307,6 +394,10 @@ class GameState {
 
 }
 
+/*
+Class that provides methods for the logic of different roles. Only separated from GameState for clarity.
+Roles that provide a clickable choice have two iterations, one before selection and one after.
+*/
 class RoleManager {
 	
 	constructor() {
@@ -316,6 +407,9 @@ class RoleManager {
 			"Liebestrank", "Hasstrank", "Holzwurm"];
 	}
 	
+	/*
+	Discussion during the day.
+	*/
 	discussion(iteration) {
 		if (iteration == 1) {
 			let names = [];
@@ -341,6 +435,9 @@ class RoleManager {
 		}
 	}
 	
+	/*
+	Werewolves
+	*/
 	werewolves(iteration) {
 		if (iteration == 1) {
 			let names = [];
@@ -365,12 +462,18 @@ class RoleManager {
 	}
 }
 
+/*
+Class representing the game history. Provides utility for saving and restoring previous game states.
+*/
 class GameHistory {
 	
 	constructor() {
 		this.hist = [];
 	}
 	
+	/*
+	Saves all variables defining the game state in hist.
+	*/
 	saveState() {
 		let variables = {};
 		for (let k in globalGameState.gameVariables) {
@@ -389,6 +492,9 @@ class GameHistory {
 		this.hist.push([variables, currentStateID, players]);
 	}
 	
+	/*
+	Pops the last element of hist and restores all stored variables to the game state and players.
+	*/
 	restoreState() {
 		if (this.hist.length == 0) {
 			window.alert("Du bist bereits am Spielbeginn angekommen, weiter zurück geht nicht!");
@@ -409,12 +515,16 @@ class GameHistory {
 		}
 	}
 	
+	/*
+	Clears the history.
+	*/
 	clear() {
 		this.hist = [];
 	}
 	
 }
 
+//Initialization of game state, role manager and history.
 const globalGameState = new GameState();
 const globalRoleManager = new RoleManager();
 const globalGameHistory = new GameHistory();

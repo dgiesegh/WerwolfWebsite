@@ -1,9 +1,20 @@
+/*
+This script contains all functions directly called by UI elements or used to update UI elements.
+Function names all end in UI.
+*/
+
+// globals
 let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
 
+/*
+Update the list of players with their properties and the game variables tab.
+*/
 function updateMenuColumnUI() {
+	
     //Update player list
+	
     let htmlString = "";
     for (let id=1; id<=globalGameState.getNumPlayers(); id++) {
         let player = globalGameState.getPlayerWithId(id);
@@ -24,8 +35,10 @@ function updateMenuColumnUI() {
         htmlString += "</div> </div> ";
     }
     document.getElementsByClassName("playerlist")[0].innerHTML = htmlString;
-    //Update game info
-    htmlString = "";
+	
+    //Update game variables
+    
+	htmlString = "";
     rgvs = globalGameState.getReadableGameVariables();
     for (let key in rgvs) {
         htmlString += key + ": " + rgvs[key] + " <br><br>";
@@ -33,6 +46,9 @@ function updateMenuColumnUI() {
     document.getElementsByClassName("gameinfo")[0].innerHTML = htmlString;
 }
 
+/*
+Adds a default player and updates UI.
+*/
 function addPlayerUI() {
 	if (globalGameRunning) {return;}
     let newPlayerID = globalGameState.getNumPlayers() + 1;
@@ -41,12 +57,18 @@ function addPlayerUI() {
     updateMenuColumnUI();
 }
 
+/*
+Removes all players and updates UI.
+*/
 function clearPlayersUI() {
 	if (globalGameRunning) {return;}
     document.getElementsByClassName("playerlist")[0].innerHTML = "";
     globalGameState.clearPlayers();
 }
 
+/*
+Toggles the visibility of player properties on and off.
+*/
 function playerDetailsUI() {
     if (globalPlayerDetailsStyle_UI == "none") {
         globalPlayerDetailsStyle_UI = "block";
@@ -56,9 +78,12 @@ function playerDetailsUI() {
     updateMenuColumnUI();
 }
 
-function togglePlayersInfoUI(button) {
+/*
+Switches between player list tab and game variables tab.
+*/
+function togglePlayersInfoUI(btn) {
     updateMenuColumnUI();
-    if (button.id == "displayplayers") {
+    if (btn.id == "displayplayers") {
         document.getElementsByClassName("menubuttons")[0].style.display = "block";
         document.getElementsByClassName("playerlist")[0].style.display = "block";
         document.getElementsByClassName("gameinfo")[0].style.display = "none";
@@ -69,6 +94,9 @@ function togglePlayersInfoUI(button) {
     }
 }
 
+/*
+Displays the main role menu and sets selected player in globals.
+*/
 function showMainRoleMenuUI(htmlLink) {
     globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.at(-1));
     document.getElementsByClassName("gamescreen")[0].style.display = "none";
@@ -76,6 +104,9 @@ function showMainRoleMenuUI(htmlLink) {
     document.getElementsByClassName("siderolemenu")[0].style.display = "none";
 }
 
+/*
+Displays the side role menu and sets selected player in globals.
+*/
 function showSideRoleMenuUI(htmlLink) {
     globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.at(-1));
     document.getElementsByClassName("gamescreen")[0].style.display = "none";
@@ -83,6 +114,9 @@ function showSideRoleMenuUI(htmlLink) {
     document.getElementsByClassName("mainrolemenu")[0].style.display = "none";
 }
 
+/*
+Triggers on selecting a role. Closes role menus, assigns role to selected player (from globals) and updates UI.
+*/
 function selectRoleUI(role, isMainRole) {
     if (globalRoleMenuSelectedPlayerID_UI == 0) {
         console.error("Global player id not set when changing role");
@@ -100,18 +134,27 @@ function selectRoleUI(role, isMainRole) {
     document.getElementsByClassName("siderolemenu")[0].style.display = "none";
 }
 
+/*
+Triggers on any changes made to the player name input fields. Changes player name.
+*/
 function updateNameUI(htmlTextField) {
     let id = Number(htmlTextField.parentElement.id.at(-1));
     let newName = htmlTextField.value;
     globalGameState.updatePlayerNameAndRole(id, newName, "", "");
 }
 
+/*
+Removes a single player.
+*/
 function removePlayerUI(player) {
     let id = Number(player.parentElement.id.at(-1));
     globalGameState.removePlayer(id);
     updateMenuColumnUI();
 }
 
+/*
+Updates the messages and buttons shown in the game window with given strings.
+*/
 function updateGameScreenUI(heading, message, buttonNames, buttonIDs) {
 	if (buttonNames.length != buttonIDs.length) {
 		console.error("Received different number of button names and ids in updateGameScreenUI");
@@ -126,11 +169,11 @@ function updateGameScreenUI(heading, message, buttonNames, buttonIDs) {
 	document.getElementsByClassName("gamebuttons")[0].innerHTML = btns;
 }
 
+/*
+Triggers when a button in the game window is pressed. Handles game start and option selections during the game.
+*/
 function selectGameOptionUI(btn) {
-	if (btn.id == "endGame") {
-		globalGameState.endGame();
-		return;
-	} else if (btn.id == "startGame") {
+	if (btn.id == "startGame") {
 		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameState.startGame();
 		return;
@@ -139,6 +182,9 @@ function selectGameOptionUI(btn) {
 	globalGameState.advanceState();
 }
 
+/*
+Triggers on clicking the Zurück button. Reverts to the previous state and calls it again.
+*/
 function returnUI() {
 	console.log("Restoring state");
 	globalGameHistory.restoreState();
@@ -146,7 +192,9 @@ function returnUI() {
 	console.log("New state id:", globalGameState.currentStateID);
 	globalGameState.callState();
 }
-
+/*
+Triggers on clicking the Abbrechen button. Ends the game.
+*/
 function abortUI() {
 	globalGameState.endGame();
 }
