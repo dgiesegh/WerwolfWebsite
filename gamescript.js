@@ -387,7 +387,7 @@ class GameState {
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "", ["Spiel beginnen"], ["startGame"]);
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwölfe, Priester, Kleines Mädchen", ["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
 	}
@@ -501,7 +501,13 @@ class RoleManager {
 					werewolves += p.name + ", ";
 				}
 			}
-			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", "Wen wollen sie töten?", names, ids);
+			let flavortext = "";
+			const littleGirlID = globalGameState.getPlayersWithRole("Kleines Mädchen")[0];
+			if (littleGirlID != -1 && !globalGameState.getPlayerWithId(littleGirlID).hasProperty("dead")) {
+				flavortext += "Das kleine Mädchen ("+globalGameState.getPlayerWithId(littleGirlID).name+") darf blinzeln.<br><br>";
+			}
+			flavortext += "Wen wollen sie töten?";
+			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", flavortext, names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			globalGameState.getPlayerWithId(id).addProperty("attackedByWerewolf");
