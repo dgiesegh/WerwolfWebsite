@@ -1,6 +1,8 @@
 Dorfbewohner:
 - Dorfbewohner: Keine Fähigkeiten
 - Priester: Kann jede Nacht eine Person segnen, die dann in der Folgenden Nacht nicht von den Werwölfen getötet werden kann.
+- Hexe: Kann einmal eine Person, die von den Werwölfen angegriffen wurde, retten, und einmal eine Person töten, allerdings nicht beides in der gleichen Nacht.
+- Kleines Mädchen: Darf, während die Werwölfe an der Reihe sind, blinzeln/luren.
 
 Werwölfe:
 - Werwolf: Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
