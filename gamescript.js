@@ -217,7 +217,7 @@ class GameState {
     }
 	
 	/*
-	Returns player id(s) with specified role, false if no players are found.
+	Returns player id(s) with specified role, 0 if no players are found.
 	*/
 	getPlayersWithRole(role) {
 		let ids = [];
@@ -227,7 +227,23 @@ class GameState {
 			}
 		}
 		if (ids.length == 0) {
-			return false;
+			return [0];
+		}
+		return ids;
+	}
+	
+	/*
+	Returns player id(s) with(out) specified property excluding excluded_ids, 0 if no players are found.
+	*/
+	getPlayersWithProperty(prop, negate=false, excluded_ids=[]) {
+		let ids = [];
+		for (let p of this.players) {
+			if ((p.hasProperty(prop) == !negate) && !excluded_ids.includes(p.id)) {
+				ids.push(p.id);
+			}
+		}
+		if (ids.length == 0) {
+			return [0];
 		}
 		return ids;
 	}
@@ -452,14 +468,11 @@ class RoleManager {
 		if (iteration == 1) {
 			const names = [];
 			let names_s = "";
-			const ids = [];
-			for (let i = 1; i<=globalGameState.getNumPlayers(); i++) {
-				let p = globalGameState.getPlayerWithId(i);
-				if (!p.hasProperty("dead")) {
-					ids.push(i);
-					names.push(p.name);
-					names_s += p.name + ", ";
-				}
+			const ids = globalGameState.getPlayersWithProperty("dead", true);
+			for (let i of ids) {
+				let name = globalGameState.getPlayerWithId(i).name;
+				names.push(name);
+				names_s += name + ", ";
 			}
 			names.push("Niemand");
 			ids.push(-1);
@@ -479,16 +492,13 @@ class RoleManager {
 	werewolves(iteration) {
 		if (iteration == 1) {
 			const names = [];
-			const ids = [];
+			const ids = globalGameState.getPlayersWithProperty("dead", true);
 			let werewolves = "";
-			for (let i = 1; i<=globalGameState.getNumPlayers(); i++) {
+			for (let i of ids) {
 				let p = globalGameState.getPlayerWithId(i);
-				if (!p.hasProperty("dead")) {
-					ids.push(i);
-					names.push(p.name);
-					if (p.hasProperty("isWerewolf")) {
-						werewolves += p.name + ", ";
-					}
+				names.push(p.name);
+				if (p.hasProperty("isWerewolf")) {
+					werewolves += p.name + ", ";
 				}
 			}
 			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", "Wen wollen sie töten?", names, ids);
@@ -504,7 +514,7 @@ class RoleManager {
 	*/
 	priest(iteration) {
 		let priest_id = -1;
-		if (!(priest_id = globalGameState.getPlayersWithRole("Priester"))) {
+		if (!(priest_id = globalGameState.getPlayersWithRole("Priester")[0])) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -515,13 +525,9 @@ class RoleManager {
 				return;
 			}
 			const names = [];
-			const ids = [];
-			for (let i = 1; i <= globalGameState.getNumPlayers(); i++) {
-				let p = globalGameState.getPlayerWithId(i);
-				if (!p.hasProperty("dead") && i != priest_id) {
-					ids.push(i);
-					names.push(p.name);
-				}
+			const ids = globalGameState.getPlayersWithProperty("dead", true, [priest_id]);
+			for (let i of ids) {
+				names.push(globalGameState.getPlayerWithId(i).name);
 			}
 			names.push("Keines"); ids.push(-1);
 			updateGameScreenUI("Priester ("+priest.name+")", "Welches Haus wird gesegnet?", names, ids);
