@@ -153,7 +153,7 @@ class GameState {
             "villagers": "Anzahl Dorfbewohner" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["priest1", "priest2", "werewolves1", "werewolves2", "witch1", "witch2", "witch3", "nightCleanup", "day1", "day2", "dayCleanup"]
+		this.states = ["necro", "priest1", "priest2", "werewolves1", "werewolves2", "witch1", "witch2", "witch3", "nightCleanup", "day1", "day2", "dayCleanup"]
     }
 	
 	// Misc
@@ -346,6 +346,9 @@ class GameState {
 	*/
 	callState() {
 		switch(this.currentState) {
+			case "necro":
+			  globalGameHistory.saveState();
+			  globalRoleManager.necro(); break;
 			case "priest1":
 			  globalGameHistory.saveState();
 			  globalRoleManager.priest(1); break;
@@ -408,7 +411,7 @@ class GameState {
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe", ["Spiel beginnen"], ["startGame"]);
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant", ["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
 	}
@@ -613,6 +616,34 @@ class RoleManager {
 				}
 			}
 			globalGameState.advanceState();
+		}
+	}
+	
+	/*
+	Nekromant
+	*/
+	necro() {
+		let necro_id = -1;
+		if (!(necro_id = globalGameState.getPlayersWithRole("Nekromant")[0])) {
+			globalGameState.advanceState();
+			return;
+		}
+		let necro = globalGameState.getPlayerWithId(necro_id);
+		if (necro.hasProperty("dead")) {
+			updateGameScreenUI("Nekromant ("+necro.name+")", "Der Nekromant ist leider schon tot.", ["Ok"], [-1]);
+			return;
+		}
+		const dead = globalGameState.getPlayersWithProperty("dead");
+		console.log(dead);
+		if (dead[0] != 0) {
+			let name_str = "Der Nekromant darf die Rolle eines toten Spielers erfragen: <br><br>";
+			for (let dead_id of dead) {
+				let p = globalGameState.getPlayerWithId(dead_id);
+				name_str += p.name + ": " + p.mainRole + "<br><br>";
+			}
+			updateGameScreenUI("Nekromant ("+necro.name+")", name_str, ["Ok"], [-1]);
+		} else {
+			updateGameScreenUI("Nekromant ("+necro.name+")", "Es ist leider noch niemand gestorben.", ["Ok"], [-1]);
 		}
 	}
 	
