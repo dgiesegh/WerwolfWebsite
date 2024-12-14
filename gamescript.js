@@ -40,7 +40,9 @@ class Player {
 	getReadableProperties() {
         let rps = [];
         for (let prop of this.properties) {
-            rps.push(this.readableNames[prop])
+			if (this.readableNames[prop] != undefined) {
+				rps.push(this.readableNames[prop]);
+			}
         }
         return rps;
     }
@@ -150,10 +152,12 @@ class GameState {
             "villagers": 0 };
         this.readableNames = {
             "werewolves": "Anzahl Werwölfe", 
-            "villagers": "Anzahl Dorfbewohner" };
+            "villagers": "Anzahl Dorfbewohner",	
+			"bitchSleepsAt": "Dorfschlampe schläft bei Spieler",
+			"lastBlessed": "Zuletzt gesegneter Spieler" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["necro", "priest1", "priest2", "werewolves1", "werewolves2", "witch1", "witch2", "witch3", "nightCleanup", "day1", "day2", "dayCleanup"]
+		this.states = ["necro", "priest1", "priest2", "bitch1", "bitch2", "werewolves1", "werewolves2", "witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
     }
 	
 	// Misc
@@ -354,6 +358,11 @@ class GameState {
 			  globalRoleManager.priest(1); break;
 			case "priest2":
 			  globalRoleManager.priest(2); break;
+			case "bitch1":
+			  globalGameHistory.saveState();
+			  globalRoleManager.bitch(1); break;
+			case "bitch2":
+			  globalRoleManager.bitch(2); break;
 			case "werewolves1":
 			  globalGameHistory.saveState();
 			  globalRoleManager.werewolves(1); break;
@@ -367,6 +376,8 @@ class GameState {
 			  globalRoleManager.witch(2); break;
 			case "witch3":
 			  globalRoleManager.witch(3); break;
+			case "bitch3":
+			  globalRoleManager.bitch(3); break;
 			case "nightCleanup":
 			  globalGameHistory.saveState();
 			  this.nightEnd(); break;
@@ -406,12 +417,14 @@ class GameState {
 			p.clearProperties();
 			p.updateNameAndRole(p.name, p.mainRole, p.sideRole);
 		}
+		this.gameVariables = {"werewolves": 0, "villagers": 0 };
 		this.updateGameVariables();
 		globalGameRunning = false;
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant", ["Spiel beginnen"], ["startGame"]);
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe", 
+		["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
 	}
@@ -535,6 +548,7 @@ class RoleManager {
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			globalGameState.getPlayerWithId(id).addProperty("attackedByWerewolf");
+			globalGameState.getPlayerWithId(id).addProperty("firstWerewolfKill");
 			globalGameState.advanceState();
 		}
 	}
@@ -555,7 +569,11 @@ class RoleManager {
 				return;
 			}
 			const names = [];
-			const ids = globalGameState.getPlayersWithProperty("dead", true, [priest_id]);
+			const excl = [priest_id];
+			if (globalGameState.gameVariables["lastBlessed"] != undefined) {
+				excl.push(globalGameState.gameVariables["lastBlessed"]);
+			}
+			const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
 			for (let i of ids) {
 				names.push(globalGameState.getPlayerWithId(i).name);
 			}
@@ -565,6 +583,9 @@ class RoleManager {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			if (id != -1) {
 				globalGameState.getPlayerWithId(id).addProperty("blessed");
+				globalGameState.gameVariables["lastBlessed"] = id;
+			} else if (globalGameState.gameVariables["lastBlessed"] != undefined){
+				delete globalGameState.gameVariables["lastBlessed"];
 			}
 			globalGameState.advanceState();
 		}
@@ -584,7 +605,14 @@ class RoleManager {
 			if (witch.hasProperty("dead")) {
 				updateGameScreenUI("Hexe ("+witch.name+")", "Die Hexe ist leider schon tot.", ["OK"], [-1]);
 			} else if (!witch.hasProperty("healUsed")) {
-				let victim_id = globalGameState.getPlayersWithProperty("attackedByWerewolf")[0];
+				const victim_ids = globalGameState.getPlayersWithProperty("attackedByWerewolf");
+				let victim_id = 0;
+				for (let id of victim_ids) {
+					if (globalGameState.getPlayerWithId(id).hasProperty("firstWerewolfKill")) {
+						victim_id = id;
+						break;
+					}
+				}
 				updateGameScreenUI("Hexe ("+witch.name+")", "Möchte sie das Opfer ("+globalGameState.getPlayerWithId(victim_id).name+") retten?", ["Ja", "Nein"], [victim_id, -1]);
 			} else {
 				updateGameScreenUI("Hexe ("+witch.name+")", "Sie kann das Opfer leider nicht retten.", ["Ok"], [-1]);
@@ -644,6 +672,54 @@ class RoleManager {
 			updateGameScreenUI("Nekromant ("+necro.name+")", name_str, ["Ok"], [-1]);
 		} else {
 			updateGameScreenUI("Nekromant ("+necro.name+")", "Es ist leider noch niemand gestorben.", ["Ok"], [-1]);
+		}
+	}
+	
+	/*
+	Dorfschlampe
+	*/
+	bitch(iteration) {
+		let bitch_id = -1;
+		if (!(bitch_id = globalGameState.getPlayersWithRole("Dorfschlampe")[0])) {
+			globalGameState.advanceState();
+			return;
+		}
+		let bitch = globalGameState.getPlayerWithId(bitch_id);
+		if (iteration == 1) {
+			if (bitch.hasProperty("dead")) {
+				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", "Die Dorfschlampe ist leider schon tot.", ["Ok"], [-1]);
+				return;
+			}
+			const excl = [];
+			if (globalGameState.gameVariables["bitchSleepsAt"] != undefined && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
+				excl.push(globalGameState.gameVariables["bitchSleepsAt"]);
+			}
+			const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
+			const names = [];
+			for (let id of ids) {
+				names.push(globalGameState.getPlayerWithId(id).name);
+			}
+			updateGameScreenUI("Dorfschlampe ("+bitch.name+")", "Wo möchte sie heute Nacht schlafen?", names, ids);
+		} else if (iteration == 2) {
+			if (!bitch.hasProperty("dead")) {
+				let id = Number(globalGameScreenSelectedBtnID_UI);
+				globalGameState.gameVariables["bitchSleepsAt"] = id;
+			}
+			globalGameState.advanceState();
+		} else if (iteration == 3) {
+			if (!bitch.hasProperty("dead") && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
+				let p = globalGameState.getPlayerWithId(globalGameState.gameVariables["bitchSleepsAt"]);
+				for (let prop of ["attackedByPotion", "attackedByWerewolf", "blessed"]) {
+					bitch.removeProperty(prop);
+					if (p.hasProperty(prop) && !p.hasProperty("isWerewolf")) {
+						bitch.addProperty(prop);
+					}
+				}
+				if (p.hasProperty("isWerewolf")) {
+					bitch.addProperty("attackedByWerewolf");
+				}
+			}
+			globalGameState.advanceState();
 		}
 	}
 	
