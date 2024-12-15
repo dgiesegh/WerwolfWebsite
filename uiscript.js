@@ -183,18 +183,25 @@ function selectGameOptionUI(btn) {
 		return;
 	}
 	globalGameScreenSelectedBtnID_UI = btn.id;
-	globalGameState.advanceState();
+	globalGameState.advanceState(true);
 }
 
 /*
 Triggers on clicking the Zurück button. Reverts to the previous state and calls it again.
 */
 function returnUI() {
-	console.log("Restoring state");
-	globalGameHistory.restoreState();
-	globalGameHistory.restoreState();
-	console.log("New state id:", globalGameState.currentStateID);
-	globalGameState.callState();
+	if (globalGameHistory.hist.length > 0) {
+		globalGameHistory.restoreState();
+		if (globalGameHistory.hist.length > 0) {
+			globalGameHistory.restoreState();
+			globalGameState.advanceState(true);
+		} else {
+			updateMenuColumnUI();
+			globalGameState.callState();
+		}
+	} else {
+		window.alert("Du bist bereits am Spielanfang angekommen, weiter zurück geht nicht.");
+	}
 }
 /*
 Triggers on clicking the Abbrechen button. Ends the game.

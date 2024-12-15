@@ -30,7 +30,9 @@ class Player {
 			"healedByPotion": "Von der Hexe geheilt",
 			"attackedByPotion": "Von der Hexe angegriffen",
 			"healUsed": "Heiltrank verbraucht",
-			"killUsed": "Todestrank verbraucht"
+			"killUsed": "Todestrank verbraucht",
+			"safeKillUsed": "Alpha-Angriff verwendet", 
+			"attackedByAlpha": "Vom Alphawolf angegriffen"
 			};
     }
 
@@ -122,7 +124,10 @@ class Player {
 				this.addProperty("dead");
 			}
 			this.removeProperty("attackedByWerewolf");
-			this.removeProperty("healedByPotion");
+		}
+		if (this.hasProperty("attackedByAlpha")) {
+			this.removeProperty("attackedByAlpha");
+			this.addProperty("dead");
 		}
 		//Hanging
 		if (this.hasProperty("gettingHanged")) {
@@ -136,6 +141,8 @@ class Player {
 		}
 		//All properties that get removed at end of night/day
 		this.removeProperty("blessed");
+		this.removeProperty("firstWerewolfKill");
+		this.removeProperty("healedByPotion");
 	}
 }
 
@@ -334,7 +341,10 @@ class GameState {
 	/*
 	Advances to the next state.
 	*/
-	advanceState() {
+	advanceState(save=false) {
+		if (save) {
+			globalGameHistory.saveState();
+		}
 		updateMenuColumnUI();
 		this.currentStateID += 1;
 		if (this.currentStateID >= this.states.length) {
@@ -351,43 +361,34 @@ class GameState {
 	callState() {
 		switch(this.currentState) {
 			case "necro":
-			  globalGameHistory.saveState();
 			  globalRoleManager.necro(); break;
 			case "priest1":
-			  globalGameHistory.saveState();
 			  globalRoleManager.priest(1); break;
 			case "priest2":
 			  globalRoleManager.priest(2); break;
 			case "bitch1":
-			  globalGameHistory.saveState();
 			  globalRoleManager.bitch(1); break;
 			case "bitch2":
 			  globalRoleManager.bitch(2); break;
 			case "werewolves1":
-			  globalGameHistory.saveState();
 			  globalRoleManager.werewolves(1); break;
 			case "werewolves2":
 			  globalRoleManager.werewolves(2); break;
 			case "witch1":
-			  globalGameHistory.saveState();
 			  globalRoleManager.witch(1); break;
 			case "witch2":
-			  globalGameHistory.saveState();
 			  globalRoleManager.witch(2); break;
 			case "witch3":
 			  globalRoleManager.witch(3); break;
 			case "bitch3":
 			  globalRoleManager.bitch(3); break;
 			case "nightCleanup":
-			  globalGameHistory.saveState();
 			  this.nightEnd(); break;
 			case "day1":
-			  globalGameHistory.saveState();
 			  globalRoleManager.discussion(1); break;
 			case "day2":
 			  globalRoleManager.discussion(2); break;
 			case "dayCleanup":
-			  globalGameHistory.saveState();
 			  this.dayEnd(); break;
 		}
 	}
@@ -423,7 +424,7 @@ class GameState {
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe", 
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf", 
 		["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -455,7 +456,7 @@ class GameState {
 			} else {
 				txt += "Niemand ist heute Nacht gestorben.";
 			}
-			updateGameScreenUI("Der Morgen graut", txt, ["OK"], ["OK"]);
+			updateGameScreenUI("Der Morgen graut", txt, ["OK"], [-1]);
 		}
 	}
 	
@@ -479,7 +480,7 @@ class GameState {
 			} else {
 				txt += "Niemand ist gestorben.";
 			}
-			updateGameScreenUI("Die Nacht bricht herein", txt, ["OK"], ["OK"]);
+			updateGameScreenUI("Die Nacht bricht herein", txt, ["OK"], [-1]);
 		}
 	}
 
@@ -527,6 +528,14 @@ class RoleManager {
 	Werwölfe
 	*/
 	werewolves(iteration) {
+		let alpha = globalGameState.getPlayersWithRole("Alphawolf")[0];
+		let alphaKill = false;
+		if (alpha != 0) {
+			alpha = globalGameState.getPlayerWithId(alpha);
+			if (!alpha.hasProperty("dead") && !alpha.hasProperty("safeKillUsed") && globalGameState.getPlayersWithProperty("isWerewolf").filter(id => !globalGameState.getPlayerWithId(id).hasProperty("dead")).length == 1) {
+				alphaKill = true;
+			}
+		}
 		if (iteration == 1) {
 			const names = [];
 			const ids = globalGameState.getPlayersWithProperty("dead", true);
@@ -543,12 +552,20 @@ class RoleManager {
 			if (littleGirlID != 0 && !globalGameState.getPlayerWithId(littleGirlID).hasProperty("dead")) {
 				flavortext += "Das kleine Mädchen ("+globalGameState.getPlayerWithId(littleGirlID).name+") darf blinzeln.<br><br>";
 			}
-			flavortext += "Wen wollen sie töten?";
+			if (alphaKill) {
+				flavortext += "Der Alphawolf hat einen unabwehrbaren Angriff. Wen möchte er töten?"
+			} else {
+				flavortext += "Wen wollen sie töten?";
+			}
 			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", flavortext, names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			globalGameState.getPlayerWithId(id).addProperty("attackedByWerewolf");
 			globalGameState.getPlayerWithId(id).addProperty("firstWerewolfKill");
+			if (alphaKill) {
+				globalGameState.getPlayerWithId(id).addProperty("attackedByAlpha");
+				alpha.addProperty("safeKillUsed");
+			}
 			globalGameState.advanceState();
 		}
 	}
@@ -708,6 +725,7 @@ class RoleManager {
 			globalGameState.advanceState();
 		} else if (iteration == 3) {
 			if (!bitch.hasProperty("dead") && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
+				bitch.removeProperty("healedByPotion");
 				let p = globalGameState.getPlayerWithId(globalGameState.gameVariables["bitchSleepsAt"]);
 				for (let prop of ["attackedByPotion", "attackedByWerewolf", "blessed"]) {
 					bitch.removeProperty(prop);
@@ -752,7 +770,7 @@ class GameHistory {
 			}
 			players[id] = props;
 		}
-		this.hist.push([variables, currentStateID, players]);
+		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI]);
 	}
 	
 	/*
@@ -763,7 +781,9 @@ class GameHistory {
 			window.alert("Du bist bereits am Spielbeginn angekommen, weiter zurück geht nicht!");
 			return;
 		}
-		let [variables, currentStateID, players] = this.hist.pop();
+		let [variables, currentStateID, players, gGSSBID_UI] = this.hist.pop();
+		globalGameScreenSelectedBtnID_UI = gGSSBID_UI;
+		globalGameState.gameVariables = {"werewolves":0, "villagers":0};
 		for (let k in variables) {
 			globalGameState.gameVariables[k] = variables[k];
 		}

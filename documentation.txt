@@ -1,11 +1,20 @@
 Dorfbewohner:
-- Dorfbewohner: Keine Fähigkeiten
-- Priester: Kann jede Nacht eine Person segnen, die dann in der Folgenden Nacht nicht von den Werwölfen getötet werden kann.
-- Hexe: Kann einmal eine Person, die von den Werwölfen angegriffen wurde, retten, und einmal eine Person töten, allerdings nicht beides in der gleichen Nacht.
+
+- Dorfbewohner:    Keine Fähigkeiten
+- Priester:        Kann jede Nacht eine Person segnen, die dann in der folgenden Nacht nicht von den Werwölfen getötet werden kann. Kann sich selbst nicht segnen.
+                   Kann nicht zweimal hintereinander die gleiche Person segnen.
+- Hexe:            Kann einmal eine Person, die von den Werwölfen angegriffen wurde, retten, und einmal eine Person töten, allerdings nicht beides in der gleichen Nacht.
 - Kleines Mädchen: Darf, während die Werwölfe an der Reihe sind, blinzeln/luren.
-- Nekromant: Darf jede Nacht die Rolle eines toten Spielers erfragen.
+- Nekromant:       Darf jede Nacht die Rolle eines toten Spielers erfragen.
+- Dorfschlampe:    Kann jede Nacht bei sich zu Hause oder bei einem anderen Spieler verbringen. Ist sie nicht zu Haus, können Werwölfe und Hexe sie nicht direkt töten.
+                   Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
+				   erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
+
 
 Werwölfe:
-- Werwolf: Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
+
+- Werwolf:         Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
+- Alphawolf:       Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
+
 
 Nebenrollen:
