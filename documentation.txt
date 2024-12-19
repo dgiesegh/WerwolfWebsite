@@ -15,6 +15,7 @@ Werwölfe:
 
 - Werwolf:         Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
 - Alphawolf:       Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
+- Werwolfwelpe:    Wie Werwolf. Wenn er stirbt, dürfen die Werwölfe in der nächsten Nacht zwei Spieler töten. 
 
 
 Nebenrollen:

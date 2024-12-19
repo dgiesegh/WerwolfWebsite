@@ -32,7 +32,8 @@ class Player {
 			"healUsed": "Heiltrank verbraucht",
 			"killUsed": "Todestrank verbraucht",
 			"safeKillUsed": "Alpha-Angriff verwendet", 
-			"attackedByAlpha": "Vom Alphawolf angegriffen"
+			"attackedByAlpha": "Vom Alphawolf angegriffen",
+			"diedLastNight": "Letzte Nacht gestorben"
 			};
     }
 
@@ -118,6 +119,7 @@ class Player {
 	Most relevant player state modifications should thus go here, not in GameState.
 	*/
 	updateProperties() {
+		let startsDead = this.hasProperty("dead");
 		//Werwolf attack
 		if (this.hasProperty("attackedByWerewolf")) {
 			if (!this.hasProperty("blessed") && !this.hasProperty("healedByPotion")) {
@@ -143,6 +145,10 @@ class Player {
 		this.removeProperty("blessed");
 		this.removeProperty("firstWerewolfKill");
 		this.removeProperty("healedByPotion");
+		//Puppy
+		if (this.mainRole == "Werwolfwelpe" && !startsDead && this.hasProperty("dead")) {
+			this.addProperty("diedLastNight");
+		}
 	}
 }
 
@@ -164,7 +170,7 @@ class GameState {
 			"lastBlessed": "Zuletzt gesegneter Spieler" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["necro", "priest1", "priest2", "bitch1", "bitch2", "werewolves1", "werewolves2", "witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
+		this.states = ["necro", "priest1", "priest2", "bitch1", "bitch2", "werewolves1", "werewolves2", "werewolves3", "werewolves4", "witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
     }
 	
 	// Misc
@@ -374,6 +380,10 @@ class GameState {
 			  globalRoleManager.werewolves(1); break;
 			case "werewolves2":
 			  globalRoleManager.werewolves(2); break;
+			case "werewolves3":
+			  globalRoleManager.werewolves(3); break;
+			case "werewolves4":
+			  globalRoleManager.werewolves(4); break;
 			case "witch1":
 			  globalRoleManager.witch(1); break;
 			case "witch2":
@@ -424,7 +434,7 @@ class GameState {
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf", 
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe", 
 		["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -446,6 +456,7 @@ class GameState {
 			}
 			if (!dead && p.hasProperty("dead")) {
 				killedNames += p.name + ", ";
+				
 			}
 		}
 		this.updateGameVariables();
@@ -528,17 +539,23 @@ class RoleManager {
 	Werwölfe
 	*/
 	werewolves(iteration) {
-		let alpha = globalGameState.getPlayersWithRole("Alphawolf")[0];
+		let puppy_id = globalGameState.getPlayersWithRole("Werwolfwelpe")[0];
+		if (iteration > 2 && (puppy_id == 0 || (puppy_id != 0 && !globalGameState.getPlayerWithId(puppy_id).hasProperty("diedLastNight")))) {
+			globalGameState.advanceState();
+			return;
+		}
+		let alpha_id = globalGameState.getPlayersWithRole("Alphawolf")[0];
 		let alphaKill = false;
-		if (alpha != 0) {
-			alpha = globalGameState.getPlayerWithId(alpha);
+		let alpha = undefined;
+		if (iteration < 3 && alpha_id != 0) {
+			alpha = globalGameState.getPlayerWithId(alpha_id);
 			if (!alpha.hasProperty("dead") && !alpha.hasProperty("safeKillUsed") && globalGameState.getPlayersWithProperty("isWerewolf").filter(id => !globalGameState.getPlayerWithId(id).hasProperty("dead")).length == 1) {
 				alphaKill = true;
 			}
 		}
-		if (iteration == 1) {
+		if (iteration == 1 || iteration == 3) {
 			const names = [];
-			const ids = globalGameState.getPlayersWithProperty("dead", true);
+			const ids = globalGameState.getPlayersWithProperty("dead", true).filter(id => !globalGameState.getPlayerWithId(id).hasProperty("attackedByWerewolf"));
 			let werewolves = "";
 			for (let i of ids) {
 				let p = globalGameState.getPlayerWithId(i);
@@ -554,17 +571,28 @@ class RoleManager {
 			}
 			if (alphaKill) {
 				flavortext += "Der Alphawolf hat einen unabwehrbaren Angriff. Wen möchte er töten?"
+			} else if (iteration == 3) {
+				flavortext += "Da der Welpe letzte Nacht gestorben ist, haben die Werwölfe einen zweiten Angriff. Wen wollen sie töten?";
+				names.push("Niemanden");
+				ids.push(-1);
 			} else {
 				flavortext += "Wen wollen sie töten?";
 			}
 			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", flavortext, names, ids);
-		} else if (iteration == 2) {
+		} else if (iteration == 2 || iteration == 4) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
-			globalGameState.getPlayerWithId(id).addProperty("attackedByWerewolf");
-			globalGameState.getPlayerWithId(id).addProperty("firstWerewolfKill");
-			if (alphaKill) {
-				globalGameState.getPlayerWithId(id).addProperty("attackedByAlpha");
-				alpha.addProperty("safeKillUsed");
+			if (id != -1) {
+				globalGameState.getPlayerWithId(id).addProperty("attackedByWerewolf");
+				if (iteration == 2) {
+					globalGameState.getPlayerWithId(id).addProperty("firstWerewolfKill");
+				}
+				if (alphaKill) {
+					globalGameState.getPlayerWithId(id).addProperty("attackedByAlpha");
+					alpha.addProperty("safeKillUsed");
+				}
+			}
+			if (iteration == 4 && puppy_id != 0) {
+				globalGameState.getPlayerWithId(puppy_id).removeProperty("diedLastNight");
 			}
 			globalGameState.advanceState();
 		}
