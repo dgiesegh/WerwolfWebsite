@@ -19,3 +19,7 @@ Werwölfe:
 
 
 Nebenrollen:
+
+- Liebestrank:    Kann in der ersten Nacht zwei Spieler (außer sich selbst) verlieben. 
+                  Stirbt der eine Spieler aus egal welchem Grund, stirbt auch der andere aus Liebeskummer. 
+                  Bleiben die beiden Verliebten als letzte übrig, gewinnen sie das Spiel.

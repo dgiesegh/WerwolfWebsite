@@ -33,7 +33,9 @@ class Player {
 			"killUsed": "Todestrank verbraucht",
 			"safeKillUsed": "Alpha-Angriff verwendet", 
 			"attackedByAlpha": "Vom Alphawolf angegriffen",
-			"diedLastNight": "Letzte Nacht gestorben"
+			"diedLastNight": "Letzte Nacht gestorben",
+			"usedLovePotion": "Liebestrank verbraucht",
+			"inLove": "Verliebt"
 			};
     }
 
@@ -141,10 +143,20 @@ class Player {
 			this.addProperty("dead");
 			this.removeProperty("attackedByPotion");
 		}
+		//Lovers death
+		if (this.hasProperty("inLove") && !this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] == true) {
+			this.addProperty("dead");
+			delete globalGameState.gameVariables["loversDied"];
+		}
 		//All properties that get removed at end of night/day
 		this.removeProperty("blessed");
 		this.removeProperty("firstWerewolfKill");
 		this.removeProperty("healedByPotion");
+		// DEATH CHECKS
+		//Lovers
+		if (this.hasProperty("inLove") && !startsDead && this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] != true) {
+			globalGameState.gameVariables["loverDied"] = true;
+		}
 		//Puppy
 		if (this.mainRole == "Werwolfwelpe" && !startsDead && this.hasProperty("dead")) {
 			this.addProperty("diedLastNight");
@@ -170,7 +182,9 @@ class GameState {
 			"lastBlessed": "Zuletzt gesegneter Spieler" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["necro", "priest1", "priest2", "bitch1", "bitch2", "werewolves1", "werewolves2", "werewolves3", "werewolves4", "witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
+		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", 
+			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
+			"witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
     }
 	
 	// Misc
@@ -366,6 +380,12 @@ class GameState {
 	*/
 	callState() {
 		switch(this.currentState) {
+			case "lovepotion1":
+			  globalRoleManager.lovepotion(1); break;
+			case "lovepotion2":
+			  globalRoleManager.lovepotion(2); break;
+			case "lovepotion3":
+			  globalRoleManager.lovepotion(3); break;
 			case "necro":
 			  globalRoleManager.necro(); break;
 			case "priest1":
@@ -410,6 +430,9 @@ class GameState {
 		if (this.gameVariables["werewolves"]==0 && this.gameVariables["villagers"]==0) {
 			updateGameScreenUI("Alle sind tot, niemand gewinnt.", "", ["OK"], ["endGame"]);
 			return true;
+		} else if (this.players.filter(p => p.hasProperty("inLove") && !p.hasProperty("dead")).length == 2 && this.getPlayersWithProperty("dead", true).length == 2) {
+			updateGameScreenUI("Das Liebespaar gewinnt!", "", ["OK"], ["endGame"]);
+			return true;
 		} else if (this.gameVariables["werewolves"]==0) {
 			updateGameScreenUI("Die Dorfbewohner gewinnen!", "", ["OK"], ["endGame"]);
 			return true;
@@ -434,8 +457,9 @@ class GameState {
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
-		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", "Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe", 
-		["Spiel beginnen"], ["startGame"]);
+		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
+			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank", 
+			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
 	}
@@ -443,25 +467,31 @@ class GameState {
 	// Night and day cleanups
 	
 	/*
-	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
+	What happens at the end of the night. Updates player properties, handles lovers, displays killed players, checks victory.
 	*/
 	nightEnd() {
-		let aliveNames = "";
 		let killedNames = "";
+		const ids_to_check = [];
 		for (let p of this.players) {
+			ids_to_check.push(p.id);
+		}
+		ids_to_check.reverse()
+		while (ids_to_check.length > 0) {
+			let p = globalGameState.getPlayerWithId(ids_to_check.pop());
 			let dead = p.hasProperty("dead");
 			p.updateProperties();
-			if (!p.hasProperty("dead")) {
-				aliveNames += p.name + ", ";
-			}
 			if (!dead && p.hasProperty("dead")) {
 				killedNames += p.name + ", ";
-				
+				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
+					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !ids_to_check.includes(_p.id))) {
+						ids_to_check.push(p2.id);
+					}
+				}
 			}
 		}
 		this.updateGameVariables();
 		if (!this.checkVictory()) {
-			let txt = "<b>"+aliveNames.slice(0,-2)+"</b> sind noch am Leben.<br><br>";
+			let txt = "";
 			if (killedNames != "") {
 				txt += "<b>"+killedNames.slice(0,-2)+"</b> hat/haben die Nacht nicht überlebt.";
 			} else {
@@ -476,11 +506,22 @@ class GameState {
 	*/
 	dayEnd() {
 		let killedNames = "";
+		const ids_to_check = [];
 		for (let p of this.players) {
+			ids_to_check.push(p.id);
+		}
+		ids_to_check.reverse();
+		while (ids_to_check.length > 0) {
+			let p = globalGameState.getPlayerWithId(ids_to_check.pop());
 			let dead = p.hasProperty("dead");
 			p.updateProperties();
 			if (!dead && p.hasProperty("dead")) {
 				killedNames += p.name + ", ";
+				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
+					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !ids_to_check.includes(_p.id))) {
+						ids_to_check.push(p2.id);
+					}
+				}
 			}
 		}
 		this.updateGameVariables();
@@ -765,6 +806,44 @@ class RoleManager {
 					bitch.addProperty("attackedByWerewolf");
 				}
 			}
+			globalGameState.advanceState();
+		}
+	}
+
+	/*
+	Liebestrank
+	*/
+	lovepotion(iteration) {
+		let pot_id = -1;
+		if (!(pot_id = globalGameState.getPlayersWithRole("Liebestrank")[0])) {
+			globalGameState.advanceState();
+			return;
+		}
+		let pot = globalGameState.getPlayerWithId(pot_id);
+		if (!pot.hasProperty("usedLovePotion")) {
+			if (iteration == 1) {
+				const ids = globalGameState.getPlayersWithProperty("dead", true, [pot_id]);
+				const names = [];
+				for (let id of ids) {
+					names.push(globalGameState.getPlayerWithId(id).name);
+				}
+				updateGameScreenUI("Liebestrank ("+pot.name+")", "Wer verliebt sich?", names, ids);
+			} else if (iteration == 2) {
+				let selected_id = Number(globalGameScreenSelectedBtnID_UI);
+				globalGameState.getPlayerWithId(selected_id).addProperty("inLove");
+				const ids = globalGameState.getPlayersWithProperty("dead", true, [pot_id, selected_id]);
+				const names = [];
+				for (let id of ids) {
+					names.push(globalGameState.getPlayerWithId(id).name);
+				}
+				updateGameScreenUI("Liebestrank ("+pot.name+")", "Wer verliebt sich?", names, ids);
+			} else if (iteration == 3) {
+				let selected_id = Number(globalGameScreenSelectedBtnID_UI);
+				globalGameState.getPlayerWithId(selected_id).addProperty("inLove");
+				pot.addProperty("usedLovePotion");
+				globalGameState.advanceState();
+			}
+		} else {
 			globalGameState.advanceState();
 		}
 	}
