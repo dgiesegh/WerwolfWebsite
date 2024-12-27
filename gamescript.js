@@ -442,6 +442,34 @@ class GameState {
 		}
 		return false;
 	}
+
+	/*
+	Updates all player properties (used at day/night end and by crossbow) (handling lovers)
+	Returns names of killed players
+	*/
+	updatePlayerProperties() {
+		const killedNames = [];
+		const idsToCheck = [];
+		for (let p of this.players) {
+			idsToCheck.push(p.id);
+		}
+		idsToCheck.reverse()
+		while (idsToCheck.length > 0) {
+			let p = globalGameState.getPlayerWithId(idsToCheck.pop());
+			let dead = p.hasProperty("dead");
+			p.updateProperties();
+			if (!dead && p.hasProperty("dead")) {
+				killedNames.push(p.name);
+				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
+					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !idsToCheck.includes(_p.id))) {
+						idsToCheck.push(p2.id);
+					}
+				}
+			}
+		}
+		this.updateGameVariables();
+		return killedNames;
+	}
 	
 	/*
 	Ends the game. Resets game state, game window, player list and history.
@@ -467,29 +495,14 @@ class GameState {
 	// Night and day cleanups
 	
 	/*
-	What happens at the end of the night. Updates player properties, handles lovers, displays killed players, checks victory.
+	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
 	*/
 	nightEnd() {
+		const killedNamesList = this.updatePlayerProperties();
 		let killedNames = "";
-		const ids_to_check = [];
-		for (let p of this.players) {
-			ids_to_check.push(p.id);
+		for (let n of killedNamesList) {
+			killedNames += n + ", ";
 		}
-		ids_to_check.reverse()
-		while (ids_to_check.length > 0) {
-			let p = globalGameState.getPlayerWithId(ids_to_check.pop());
-			let dead = p.hasProperty("dead");
-			p.updateProperties();
-			if (!dead && p.hasProperty("dead")) {
-				killedNames += p.name + ", ";
-				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
-					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !ids_to_check.includes(_p.id))) {
-						ids_to_check.push(p2.id);
-					}
-				}
-			}
-		}
-		this.updateGameVariables();
 		if (!this.checkVictory()) {
 			let txt = "";
 			if (killedNames != "") {
@@ -505,26 +518,11 @@ class GameState {
 	What happens at the end of the day. Updates player properties, displays killed players, checks victory.
 	*/
 	dayEnd() {
+		const killedNamesList = this.updatePlayerProperties();
 		let killedNames = "";
-		const ids_to_check = [];
-		for (let p of this.players) {
-			ids_to_check.push(p.id);
+		for (let n of killedNamesList) {
+			killedNames += n + ", ";
 		}
-		ids_to_check.reverse();
-		while (ids_to_check.length > 0) {
-			let p = globalGameState.getPlayerWithId(ids_to_check.pop());
-			let dead = p.hasProperty("dead");
-			p.updateProperties();
-			if (!dead && p.hasProperty("dead")) {
-				killedNames += p.name + ", ";
-				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
-					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !ids_to_check.includes(_p.id))) {
-						ids_to_check.push(p2.id);
-					}
-				}
-			}
-		}
-		this.updateGameVariables();
 		if (!this.checkVictory()) {
 			let txt = "";
 			if (killedNames != "") {
