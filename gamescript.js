@@ -35,7 +35,8 @@ class Player {
 			"attackedByAlpha": "Vom Alphawolf angegriffen",
 			"diedLastNight": "Letzte Nacht gestorben",
 			"usedLovePotion": "Liebestrank verbraucht",
-			"inLove": "Verliebt"
+			"inLove": "Verliebt",
+			"attackedByCrossbow": "Von der Armbrust getroffen"
 			};
     }
 
@@ -143,6 +144,11 @@ class Player {
 			this.addProperty("dead");
 			this.removeProperty("attackedByPotion");
 		}
+		//Crossbow attack
+		if (this.hasProperty("attackedByCrossbow")) {
+			this.addProperty("dead");
+			this.removeProperty("attackedByCrossbow");
+		}
 		//Lovers death
 		if (this.hasProperty("inLove") && !this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] == true) {
 			this.addProperty("dead");
@@ -179,12 +185,14 @@ class GameState {
             "werewolves": "Anzahl Werwölfe", 
             "villagers": "Anzahl Dorfbewohner",	
 			"bitchSleepsAt": "Dorfschlampe schläft bei Spieler",
-			"lastBlessed": "Zuletzt gesegneter Spieler" };
+			"lastBlessed": "Zuletzt gesegneter Spieler",
+			"crossbow": "Armbrust aktiv" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
-			"witch1", "witch2", "witch3", "bitch3", "nightCleanup", "day1", "day2", "dayCleanup"]
+			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", 
+			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup"]
     }
 	
 	// Misc
@@ -412,6 +420,10 @@ class GameState {
 			  globalRoleManager.witch(3); break;
 			case "bitch3":
 			  globalRoleManager.bitch(3); break;
+			case "crossbow1":
+			  globalRoleManager.crossbow(1); break;
+			case "crossbow2":
+			  globalRoleManager.crossbow(2); break;
 			case "nightCleanup":
 			  this.nightEnd(); break;
 			case "day1":
@@ -486,7 +498,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank", 
+			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -840,6 +852,50 @@ class RoleManager {
 				globalGameState.getPlayerWithId(selected_id).addProperty("inLove");
 				pot.addProperty("usedLovePotion");
 				globalGameState.advanceState();
+			}
+		} else {
+			globalGameState.advanceState();
+		}
+	}
+
+	/*
+	Armbrust
+	*/
+	crossbow(iteration) {
+		let cb_id = 0;
+		if (!(cb_id = globalGameState.getPlayersWithRole("Armbrust")[0])) {
+			globalGameState.advanceState();
+			return;
+		}
+		let cb = globalGameState.getPlayerWithId(cb_id);
+		if (!cb.hasProperty("dead")) {
+			if (iteration == 1) {
+				globalGameHistory.saveState();
+				globalGameState.updatePlayerProperties();
+				if (cb.hasProperty("dead")) {
+					globalGameHistory.restoreState();
+					const ids = globalGameState.getPlayersWithProperty("dead", true, [cb_id]);
+					const names = [];
+					for (let id of ids) {
+						names.push(globalGameState.getPlayerWithId(id).name);
+					}
+					ids.push(-1);
+					names.push("Niemanden");
+					globalGameState.gameVariables["crossbow"] = true;
+					updateGameScreenUI("Armbrust ("+cb.name+")", "Der Spieler mit der Armbrust darf noch einen letzten Schuss abfeuern. Wen reißt er mit in den Tod?", names, ids);
+				} else {
+					globalGameHistory.restoreState();
+					globalGameState.advanceState();
+				}
+			} else if (iteration == 2) {
+				if (globalGameState.gameVariables["crossbow"] == true) {
+					let id = Number(globalGameScreenSelectedBtnID_UI);
+					if (id > 0) {
+						globalGameState.getPlayerWithId(id).addProperty("attackedByCrossbow");
+					}
+					delete globalGameState.gameVariables["crossbow"];
+					globalGameState.advanceState()
+				}
 			}
 		} else {
 			globalGameState.advanceState();
