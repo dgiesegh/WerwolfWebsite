@@ -43,7 +43,11 @@ function updateMenuColumnUI() {
 	htmlString = "";
     rgvs = globalGameState.getReadableGameVariables();
     for (let key in rgvs) {
-        htmlString += key + ": " + rgvs[key] + " <br><br>";
+        if (rgvs[key] != "") {
+            htmlString += key + ": " + rgvs[key] + " <br><br>";
+        } else {
+            htmlString += key + " <br><br>";
+        }
     }
     document.getElementsByClassName("gameinfo")[0].innerHTML = htmlString;
 }

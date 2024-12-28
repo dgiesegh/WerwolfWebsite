@@ -1,26 +1,30 @@
 Dorfbewohner:
 
-- Dorfbewohner:    Keine Fähigkeiten
-- Priester:        Kann jede Nacht eine Person segnen, die dann in der folgenden Nacht nicht von den Werwölfen getötet werden kann. Kann sich selbst nicht segnen.
-                   Kann nicht zweimal hintereinander die gleiche Person segnen.
-- Hexe:            Kann einmal eine Person, die von den Werwölfen angegriffen wurde, retten, und einmal eine Person töten, allerdings nicht beides in der gleichen Nacht.
-- Kleines Mädchen: Darf, während die Werwölfe an der Reihe sind, blinzeln/luren.
-- Nekromant:       Darf jede Nacht die Rolle eines toten Spielers erfragen.
-- Dorfschlampe:    Kann jede Nacht bei sich zu Hause oder bei einem anderen Spieler verbringen. Ist sie nicht zu Haus, können Werwölfe und Hexe sie nicht direkt töten.
-                   Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
-				   erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
+- Dorfbewohner:     Keine Fähigkeiten
+- Priester:         Kann jede Nacht eine Person segnen, die dann in der folgenden Nacht nicht von den Werwölfen getötet werden kann. Kann sich selbst nicht segnen.
+                    Kann nicht zweimal hintereinander die gleiche Person segnen.
+- Hexe:             Kann einmal eine Person, die von den Werwölfen angegriffen wurde, retten, und einmal eine Person töten, allerdings nicht beides in der gleichen Nacht.
+- Kleines Mädchen:  Darf, während die Werwölfe an der Reihe sind, blinzeln/luren.
+- Nekromant:        Darf jede Nacht die Rolle eines toten Spielers erfragen.
+- Dorfschlampe:     Kann jede Nacht bei sich zu Hause oder bei einem anderen Spieler verbringen. Ist sie nicht zu Haus, können Werwölfe und Hexe sie nicht direkt töten.
+                    Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
+				    erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
 
 
 Werwölfe:
 
-- Werwolf:         Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
-- Alphawolf:       Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
-- Werwolfwelpe:    Wie Werwolf. Wenn er stirbt, dürfen die Werwölfe in der nächsten Nacht zwei Spieler töten. 
+- Werwolf:          Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
+- Alphawolf:        Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
+- Werwolfwelpe:     Wie Werwolf. Wenn er stirbt, dürfen die Werwölfe in der nächsten Nacht zwei Spieler töten. 
 
 
 Nebenrollen:
 
-- Liebestrank:    Kann in der ersten Nacht zwei Spieler (außer sich selbst) verlieben. 
-                  Stirbt der eine Spieler aus egal welchem Grund, stirbt auch der andere aus Liebeskummer. 
-                  Bleiben die beiden Verliebten als letzte übrig, gewinnen sie das Spiel.
-- Armbrust:       Stirbt der Spieler mit der Armbrust aus egal welchem Grund, darf er einen weiteren Spieler mit in den Tod reißen.
+- Liebestrank:      Kann in der ersten Nacht zwei Spieler (außer sich selbst) verlieben. 
+                    Stirbt der eine Spieler aus egal welchem Grund, stirbt auch der andere aus Liebeskummer. 
+                    Bleiben die beiden Verliebten als letzte übrig, gewinnen sie das Spiel.
+- Armbrust:         Stirbt der Spieler mit der Armbrust aus egal welchem Grund, darf er einen weiteren Spieler mit in den Tod reißen.
+- Stärketrank:      Der Spieler mit dem Stärketrank hat ein zweites Leben (d.h. wenn er das erste mal sterben würde, stirbt er nicht).
+- Stein & Amulett:  Stirbt der Spieler mit dem Amulett, erhält der Spieler mit dem Stein ein zweites Leben, und umgekehrt.
+                    Das zweite Leben fungiert analog zum Stärketrank, gilt jedoch erst ab der nächsten Nacht / dem nächsten Tag 
+                    (d.h. sterben beide in einer Nacht / an einem Tag, bekommt niemand ein zweites Leben).

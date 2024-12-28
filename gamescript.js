@@ -36,7 +36,8 @@ class Player {
 			"diedLastNight": "Letzte Nacht gestorben",
 			"usedLovePotion": "Liebestrank verbraucht",
 			"inLove": "Verliebt",
-			"attackedByCrossbow": "Von der Armbrust getroffen"
+			"attackedByCrossbow": "Von der Armbrust getroffen",
+			"extraLife": "Hat ein zweites Leben"
 			};
     }
 
@@ -78,6 +79,11 @@ class Player {
         if (newSideRole != "") {
             if (globalRoleManager.sideRoles.includes(newSideRole)) {
                 this.sideRole = newSideRole;
+				if (newSideRole == "Stärketrank") {
+					this.addProperty("extraLife");
+				} else {
+					this.removeProperty("extraLife");
+				}
             } else {
                 console.error("Invalid side role name in updateNameAndRole");
             }
@@ -158,6 +164,11 @@ class Player {
 		this.removeProperty("blessed");
 		this.removeProperty("firstWerewolfKill");
 		this.removeProperty("healedByPotion");
+		//Extra life
+		if (!startsDead && this.hasProperty("dead") && this.hasProperty("extraLife")) {
+			this.removeProperty("dead");
+			this.removeProperty("extraLife");
+		}
 		// DEATH CHECKS
 		//Lovers
 		if (this.hasProperty("inLove") && !startsDead && this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] != true) {
@@ -166,6 +177,10 @@ class Player {
 		//Puppy
 		if (this.mainRole == "Werwolfwelpe" && !startsDead && this.hasProperty("dead")) {
 			this.addProperty("diedLastNight");
+		}
+		//Stone and amulet
+		if ((this.sideRole == "Stein" || this.sideRole == "Amulett") && !startsDead && this.hasProperty("dead")) {
+			globalGameState.gameVariables["stoneAndAmulet"] = true;
 		}
 	}
 }
@@ -186,13 +201,14 @@ class GameState {
             "villagers": "Anzahl Dorfbewohner",	
 			"bitchSleepsAt": "Dorfschlampe schläft bei Spieler",
 			"lastBlessed": "Zuletzt gesegneter Spieler",
-			"crossbow": "Armbrust aktiv" };
+			"crossbow": "Armbrust aktiv",
+			"stoneAndAmulet": "Stein oder Amulett gestorben" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
-			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", 
-			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup"]
+			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
+			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
     }
 	
 	// Misc
@@ -204,7 +220,7 @@ class GameState {
         let rgvs = {};
         for (let key in this.gameVariables) {
             if (typeof(this.gameVariables[key]) == "boolean") {
-                rgvs[this.readableNames[key]] = this.gameVariables[key] ? "ja" : "nein";
+                rgvs[this.readableNames[key]] = this.gameVariables[key] ? "" : "nein";
             } else {
                 rgvs[this.readableNames[key]] = this.gameVariables[key];
             }
@@ -352,6 +368,10 @@ class GameState {
 			window.alert("Doppelte Rollen: "+ roles.toString());
 			return false;
 		}
+		if (!([0,2].includes(this.players.filter(p => p.sideRole=="Stein" || p.sideRole=="Amulett").length))) {
+			window.alert("Es müssen entweder Stein und Amulett oder keines von beiden im Spiel sein!");
+			return false;
+		}
 		return true;
 	}
 	
@@ -426,6 +446,8 @@ class GameState {
 			  globalRoleManager.crossbow(2); break;
 			case "nightCleanup":
 			  this.nightEnd(); break;
+			case "stoneAndAmulet":
+			  globalRoleManager.stoneAndAmulet(); break;
 			case "day1":
 			  globalRoleManager.discussion(1); break;
 			case "day2":
@@ -498,7 +520,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust", 
+			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust, Stein, Amulett, Stärketrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -900,6 +922,25 @@ class RoleManager {
 		} else {
 			globalGameState.advanceState();
 		}
+	}
+
+	/*
+	Stein und Amulett
+	*/
+	stoneAndAmulet() {
+		if (globalGameState.gameVariables["stoneAndAmulet"] == true) {
+			for (let role of ["Stein", "Amulett"]) {
+				let id = globalGameState.getPlayersWithRole(role)[0];
+				if (id > 0) {
+					let p = globalGameState.getPlayerWithId(id);
+					if (!p.hasProperty("dead")) {
+						p.addProperty("extraLife");
+					}
+				}
+			}
+			delete globalGameState.gameVariables["stoneAndAmulet"];
+		}
+		globalGameState.advanceState();
 	}
 	
 }
