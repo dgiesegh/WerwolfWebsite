@@ -167,12 +167,24 @@
 
  .playercolumn .playermenu .gameinfo {
     text-align: center;
-    height: calc(100% - 140px);
-    padding-top: 25px;
+    height: calc(40% - 95px);
+    padding-top: 20px;
+    padding-bottom: 20px;
     line-height: 25px;
     font-size: 1.5em;
     display: none;
     overflow: auto;
+ }
+
+ .playercolumn .playermenu .messagelog {
+   height: calc(60% - 95px);
+   padding-left: 2px;
+   padding-right: 2px;
+   line-height: 17px;
+   border-top: 1px dashed black;
+   font-size: 1em;
+   display: none;
+   overflow: auto;
  }
 
  .gamescreen .backandabort {
@@ -236,8 +248,8 @@
     height: 50px;
     line-height: 50px;
     margin-bottom: 20px;
-	margin-top: 5px;
-	border: 1px solid red;
+	 margin-top: 5px;
+	 border: 1px solid red;
     border-radius: 5px;
 	font-size: 1.5em;
  }

@@ -7,6 +7,7 @@ Function names all end in UI.
 let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
+const globalGameScreenConsoleHist_UI = [];
 
 /*
 Update the list of players with their properties and the game variables tab.
@@ -43,10 +44,10 @@ function updateMenuColumnUI() {
 	htmlString = "";
     rgvs = globalGameState.getReadableGameVariables();
     for (let key in rgvs) {
-        if (rgvs[key] != "") {
-            htmlString += key + ": " + rgvs[key] + " <br><br>";
+        if (rgvs[key] !== "") {
+            htmlString += key + ": " + rgvs[key] + " <br>";
         } else {
-            htmlString += key + " <br><br>";
+            htmlString += key + " <br>";
         }
     }
     document.getElementsByClassName("gameinfo")[0].innerHTML = htmlString;
@@ -93,10 +94,12 @@ function togglePlayersInfoUI(btn) {
         document.getElementsByClassName("menubuttons")[0].style.display = "block";
         document.getElementsByClassName("playerlist")[0].style.display = "block";
         document.getElementsByClassName("gameinfo")[0].style.display = "none";
+        document.getElementsByClassName("messagelog")[0].style.display = "none";
     } else {
         document.getElementsByClassName("menubuttons")[0].style.display = "none";
         document.getElementsByClassName("playerlist")[0].style.display = "none";
         document.getElementsByClassName("gameinfo")[0].style.display = "block";
+        document.getElementsByClassName("messagelog")[0].style.display = "block";
     }
 }
 
@@ -187,6 +190,7 @@ function selectGameOptionUI(btn) {
 		return;
 	}
 	globalGameScreenSelectedBtnID_UI = btn.id;
+    logMessageUI(btn.innerHTML+" wurde per Button ausgewählt");
 	globalGameState.advanceState(true);
 }
 
@@ -203,13 +207,39 @@ function returnUI() {
 			updateMenuColumnUI();
 			globalGameState.callState();
 		}
+        printLogMessagesUI();
 	} else {
 		window.alert("Du bist bereits am Spielanfang angekommen, weiter zurück geht nicht.");
 	}
 }
+
 /*
 Triggers on clicking the Abbrechen button. Ends the game.
 */
 function abortUI() {
 	globalGameState.endGame();
+}
+
+/*
+Adds message to game console log.
+*/
+function logMessageUI(message) {
+    if (globalGameScreenConsoleHist_UI.length == 500) {
+        globalGameScreenConsoleHist_UI.splice(0,1);
+    }
+    globalGameScreenConsoleHist_UI.push(message);
+    printLogMessagesUI();
+}
+
+/*
+Prints game console log
+*/
+function printLogMessagesUI() {
+    globalGameScreenConsoleHist_UI.reverse();
+    let htmlString = "";
+    for (let msg of globalGameScreenConsoleHist_UI) {
+        htmlString += "<p>"+msg+"</p>";
+    }
+    globalGameScreenConsoleHist_UI.reverse();
+    document.getElementsByClassName("messagelog")[0].innerHTML = htmlString;
 }

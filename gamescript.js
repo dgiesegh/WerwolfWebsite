@@ -57,20 +57,22 @@ class Player {
 	/*
 	Updates name and roles depending on input and properties if necessary
 	*/
-	updateNameAndRole(newName, newMainRole, newSideRole) {
+	updateNameAndRole(newName, newMainRole, newSideRole, nolog=false) {
 		if (newName != "") {
             this.name = newName;
         }
         if (newMainRole != "") {
             if (globalRoleManager.villagerMainRoles.includes(newMainRole)) {
                 this.mainRole = newMainRole;
+				if (!nolog) {logMessageUI(this.name+" ändert die Hauptrolle zu "+newMainRole);}
                 if (this.hasProperty("isWerewolf")) {
-                    this.removeProperty("isWerewolf");
+                    this.removeProperty("isWerewolf", nolog);
                 }
             } else if (globalRoleManager.werewolfMainRoles.includes(newMainRole)) {
                 this.mainRole = newMainRole;
+				if (!nolog) {logMessageUI(this.name+" ändert die Hauptrolle zu "+newMainRole);}
                 if (!this.hasProperty("isWerewolf")) {
-                    this.addProperty("isWerewolf");
+                    this.addProperty("isWerewolf", nolog);
                 }
             } else {
                 console.error("Invalid main role name in updateNameAndRole");
@@ -79,10 +81,11 @@ class Player {
         if (newSideRole != "") {
             if (globalRoleManager.sideRoles.includes(newSideRole)) {
                 this.sideRole = newSideRole;
+				if (!nolog) {logMessageUI(this.name+" ändert die Nebenrolle zu "+newSideRole);}
 				if (newSideRole == "Stärketrank") {
-					this.addProperty("extraLife");
+					this.addProperty("extraLife", nolog);
 				} else {
-					this.removeProperty("extraLife");
+					this.removeProperty("extraLife", nolog);
 				}
             } else {
                 console.error("Invalid side role name in updateNameAndRole");
@@ -100,8 +103,11 @@ class Player {
 	/*
 	Adds prop to properties if it doesn't exist yet.
 	*/
-	addProperty(prop) {
+	addProperty(prop, nolog=false) {
 		if (!this.hasProperty(prop)) {
+			if (this.readableNames[prop] != undefined && this.readableNames[prop] != "Tot" && !nolog) {
+				logMessageUI(this.name+" erhält Eigenschaft \""+this.readableNames[prop]+"\"");
+			}
 			this.properties.push(prop);
 		}
 	}
@@ -109,8 +115,11 @@ class Player {
 	/*
 	Removes prop from properties if it exists.
 	*/
-	removeProperty(prop) {
+	removeProperty(prop, nolog=false) {
 		if (this.hasProperty(prop)) {
+			if (this.readableNames[prop] != undefined && !nolog) {
+				logMessageUI(this.name+" verliert Eigenschaft \""+this.readableNames[prop]+"\"");
+			}
 			let i = this.properties.indexOf(prop);
 			this.properties.splice(i, 1);
 		}
@@ -129,36 +138,37 @@ class Player {
 	*/
 	updateProperties() {
 		let startsDead = this.hasProperty("dead");
+		let deathReason = "";
 		//Werwolf attack
 		if (this.hasProperty("attackedByWerewolf")) {
 			if (!this.hasProperty("blessed") && !this.hasProperty("healedByPotion")) {
-				this.addProperty("dead");
+				this.addProperty("dead"); deathReason = "Werwölfen";
 			}
 			this.removeProperty("attackedByWerewolf");
 		}
 		if (this.hasProperty("attackedByAlpha")) {
 			this.removeProperty("attackedByAlpha");
-			this.addProperty("dead");
+			this.addProperty("dead"); deathReason = "Alphawolf";
 		}
 		//Hanging
 		if (this.hasProperty("gettingHanged")) {
 			this.removeProperty("gettingHanged");
-			this.addProperty("dead");
+			this.addProperty("dead"); deathReason = "Hinrichtung";
 		}
 		//Witch attack
 		if (this.hasProperty("attackedByPotion")) {
-			this.addProperty("dead");
+			this.addProperty("dead"); deathReason = "Hexentrank";
 			this.removeProperty("attackedByPotion");
 		}
 		//Crossbow attack
 		if (this.hasProperty("attackedByCrossbow")) {
-			this.addProperty("dead");
+			this.addProperty("dead"); deathReason = "Armbrust";
 			this.removeProperty("attackedByCrossbow");
 		}
 		//Lovers death
 		if (this.hasProperty("inLove") && !this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] == true) {
-			this.addProperty("dead");
-			delete globalGameState.gameVariables["loversDied"];
+			this.addProperty("dead"); deathReason = "Liebeskummer";
+			delete globalGameState.gameVariables["loverDied"];
 		}
 		//All properties that get removed at end of night/day
 		this.removeProperty("blessed");
@@ -168,8 +178,13 @@ class Player {
 		if (!startsDead && this.hasProperty("dead") && this.hasProperty("extraLife")) {
 			this.removeProperty("dead");
 			this.removeProperty("extraLife");
+			logMessageUI(this.name+" hat das zweite Leben verbraucht");
 		}
 		// DEATH CHECKS
+		//Console
+		if (!startsDead && this.hasProperty("dead")) {
+			logMessageUI(this.name+" stirbt wegen "+deathReason);
+		}
 		//Lovers
 		if (this.hasProperty("inLove") && !startsDead && this.hasProperty("dead") && globalGameState.gameVariables["loverDied"] != true) {
 			globalGameState.gameVariables["loverDied"] = true;
@@ -244,6 +259,7 @@ class GameState {
         let newPlayer = new Player(this.getNumPlayers() + 1, name);
         this.players.push(newPlayer);
         this.gameVariables["villagers"] += 1;
+		logMessageUI(name+" hinzugefügt");
     }
 	
 	/*
@@ -253,6 +269,7 @@ class GameState {
         this.players.splice(0, this.getNumPlayers());
         this.gameVariables["werewolves"] = 0;
         this.gameVariables["villagers"] = 0;
+		logMessageUI("Alle Spieler entfernt");
     }
 	
 	/*
@@ -264,6 +281,7 @@ class GameState {
         } else {
             this.gameVariables["villagers"]--;
         }
+		logMessageUI(this.players[id-1].name+" entfernt");
         this.players.splice(id-1, 1);
         for (let i=0; i<this.getNumPlayers(); i++) {
             this.players[i].id = i+1;
@@ -317,7 +335,6 @@ class GameState {
 	Updates player name and role given by id as well as game variables.
 	*/
     updatePlayerNameAndRole(id, newName, newMainRole, newSideRole) {
-        console.log("Updating player", id, newName, newMainRole, newSideRole);
         let player = this.getPlayerWithId(id);
         player.updateNameAndRole(newName, newMainRole, newSideRole);
 		globalGameState.updateGameVariables();
@@ -380,6 +397,7 @@ class GameState {
 	*/
 	startGame() {
 		if (!this.checkGameStartConditions()) {return;}
+		logMessageUI("Spiel beginnt");
 		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameRunning = true;
 		updateMenuColumnUI();
@@ -511,7 +529,7 @@ class GameState {
 	endGame() {
 		for (let p of this.players) {
 			p.clearProperties();
-			p.updateNameAndRole(p.name, p.mainRole, p.sideRole);
+			p.updateNameAndRole(p.name, p.mainRole, p.sideRole, true);
 		}
 		this.gameVariables = {"werewolves": 0, "villagers": 0 };
 		this.updateGameVariables();
@@ -524,6 +542,7 @@ class GameState {
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
+		logMessageUI("Spiel endet");
 	}
 	
 	// Night and day cleanups
@@ -588,6 +607,7 @@ class RoleManager {
 	*/
 	discussion(iteration) {
 		if (iteration == 1) {
+			logMessageUI("Diskussion beginnt");
 			const names = [];
 			let names_s = "";
 			const ids = globalGameState.getPlayersWithProperty("dead", true);
@@ -627,6 +647,7 @@ class RoleManager {
 			}
 		}
 		if (iteration == 1 || iteration == 3) {
+			logMessageUI("Die Werwölfe sind an der Reihe");
 			const names = [];
 			const ids = globalGameState.getPlayersWithProperty("dead", true).filter(id => !globalGameState.getPlayerWithId(id).hasProperty("attackedByWerewolf"));
 			let werewolves = "";
@@ -682,6 +703,7 @@ class RoleManager {
 		}
 		let priest = globalGameState.getPlayerWithId(priest_id);
 		if (iteration == 1) {
+			logMessageUI("Der Priester ist an der Reihe");
 			if (priest.hasProperty("dead")) {
 				updateGameScreenUI("Priester ("+priest.name+")", "Der Priester ist leider schon tot.", ["OK"], [-1]);
 				return;
@@ -720,6 +742,7 @@ class RoleManager {
 		}
 		let witch = globalGameState.getPlayerWithId(witch_id);
 		if (iteration == 1) {
+			logMessageUI("Die Hexe ist an der Reihe");
 			if (witch.hasProperty("dead")) {
 				updateGameScreenUI("Hexe ("+witch.name+")", "Die Hexe ist leider schon tot.", ["OK"], [-1]);
 			} else if (!witch.hasProperty("healUsed")) {
@@ -774,6 +797,7 @@ class RoleManager {
 			globalGameState.advanceState();
 			return;
 		}
+		logMessageUI("Der Nekromant ist an der Reihe");
 		let necro = globalGameState.getPlayerWithId(necro_id);
 		if (necro.hasProperty("dead")) {
 			updateGameScreenUI("Nekromant ("+necro.name+")", "Der Nekromant ist leider schon tot.", ["Ok"], [-1]);
@@ -804,6 +828,7 @@ class RoleManager {
 		}
 		let bitch = globalGameState.getPlayerWithId(bitch_id);
 		if (iteration == 1) {
+			logMessageUI("Die Dorfschlampe ist an der Reihe");
 			if (bitch.hasProperty("dead")) {
 				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", "Die Dorfschlampe ist leider schon tot.", ["Ok"], [-1]);
 				return;
@@ -854,6 +879,7 @@ class RoleManager {
 		let pot = globalGameState.getPlayerWithId(pot_id);
 		if (!pot.hasProperty("usedLovePotion")) {
 			if (iteration == 1) {
+				logMessageUI("Der Spieler mit dem Liebestrank ist an der Reihe");
 				const ids = globalGameState.getPlayersWithProperty("dead", true, [pot_id]);
 				const names = [];
 				for (let id of ids) {
@@ -896,6 +922,7 @@ class RoleManager {
 				globalGameState.updatePlayerProperties();
 				if (cb.hasProperty("dead")) {
 					globalGameHistory.restoreState();
+					logMessageUI("Die Armbrust wurde ausgelöst");
 					const ids = globalGameState.getPlayersWithProperty("dead", true, [cb_id]);
 					const names = [];
 					for (let id of ids) {
@@ -972,7 +999,8 @@ class GameHistory {
 			}
 			players[id] = props;
 		}
-		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI]);
+		let console_length = globalGameScreenConsoleHist_UI.length;
+		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI, console_length]);
 	}
 	
 	/*
@@ -983,7 +1011,7 @@ class GameHistory {
 			window.alert("Du bist bereits am Spielbeginn angekommen, weiter zurück geht nicht!");
 			return;
 		}
-		let [variables, currentStateID, players, gGSSBID_UI] = this.hist.pop();
+		let [variables, currentStateID, players, gGSSBID_UI, console_length] = this.hist.pop();
 		globalGameScreenSelectedBtnID_UI = gGSSBID_UI;
 		globalGameState.gameVariables = {"werewolves":0, "villagers":0};
 		for (let k in variables) {
@@ -995,9 +1023,10 @@ class GameHistory {
 			let p = globalGameState.getPlayerWithId(id);
 			p.clearProperties();
 			for (let prop of players[id]) {
-				p.addProperty(prop);
+				p.addProperty(prop, true);
 			}
 		}
+		globalGameScreenConsoleHist_UI.splice(console_length, globalGameScreenConsoleHist_UI.length-console_length);
 	}
 	
 	/*
