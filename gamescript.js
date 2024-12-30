@@ -220,7 +220,7 @@ class GameState {
 			"stoneAndAmulet": "Stein oder Amulett gestorben" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", 
+		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
@@ -442,6 +442,8 @@ class GameState {
 			  globalRoleManager.bitch(1); break;
 			case "bitch2":
 			  globalRoleManager.bitch(2); break;
+			case "dog":
+			  globalRoleManager.dog(); break;
 			case "werewolves1":
 			  globalRoleManager.werewolves(1); break;
 			case "werewolves2":
@@ -538,7 +540,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust, Stein, Amulett, Stärketrank", 
+			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -600,6 +602,7 @@ class RoleManager {
         this.werewolfMainRoles = ["Werwolf", "Fips", "Räudiger Wolf", "Schwein", "Schattenwolf", "Werwolfwelpe", "Alphawolf"];
         this.sideRoles = ["Keine Nebenrolle", "Armbrust", "Dichter", "Schweigetrank", "Leichenfledderer", "Michi", "Adeliger", "Stein", "Amulett", "Stärketrank", "Starker Magen", "Ludwig", "Pestkranker", 
 			"Liebestrank", "Hasstrank", "Holzwurm"];
+		this.stinkyRoles = ["Hexe", "Nekromant"];
 	}
 	
 	/*
@@ -968,6 +971,34 @@ class RoleManager {
 			delete globalGameState.gameVariables["stoneAndAmulet"];
 		}
 		globalGameState.advanceState();
+	}
+
+	/*
+	Michi
+	*/
+	dog() {
+		let dog_id = globalGameState.getPlayersWithRole("Michi")[0];
+		if (!dog_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let dog = globalGameState.getPlayerWithId(dog_id);
+		if (!dog.hasProperty("dead")) {
+			const stinky = {};
+			for (let pid of globalGameState.getPlayersWithProperty("dead", true, [dog_id])) {
+				let p = globalGameState.getPlayerWithId(pid);
+				stinky[p.name] = this.stinkyRoles.includes(p.mainRole) || this.stinkyRoles.includes(p.sideRole) || p.hasProperty("isWerewolf");
+			}
+			let htmlString = "An welchem Spieler möchte Michi schnüffeln?<br><br>";
+			for (let name in stinky) {
+				htmlString += name + ": ";
+				htmlString += stinky[name] ? "unmenschlich" : "menschlich";
+				htmlString += "<br>"
+			}
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", htmlString, ["OK"], [-1]);
+		} else {
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", "Michi schnüffelt nicht mehr, da sein Besitzer leider schon tot ist.", ["OK"], [-1]);
+		}
 	}
 	
 }
