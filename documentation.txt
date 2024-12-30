@@ -28,3 +28,5 @@ Nebenrollen:
 - Stein & Amulett:  Stirbt der Spieler mit dem Amulett, erhält der Spieler mit dem Stein ein zweites Leben, und umgekehrt.
                     Das zweite Leben fungiert analog zum Stärketrank, gilt jedoch erst ab der nächsten Nacht / dem nächsten Tag 
                     (d.h. sterben beide in einer Nacht / an einem Tag, bekommt niemand ein zweites Leben).
+- Michi:            Der Besitzer des Hundes Michi kann seinen Hund jede Nacht an einem Spieler schnüffeln lassen, um zu erfahren, ob er menschlich riecht.
+                    Alle Spieler außer Werwölfe, Hexe und Nekromant riechen menschlich.
