@@ -37,7 +37,8 @@ class Player {
 			"usedLovePotion": "Liebestrank verbraucht",
 			"inLove": "Verliebt",
 			"attackedByCrossbow": "Von der Armbrust getroffen",
-			"extraLife": "Hat ein zweites Leben"
+			"extraLife": "Hat ein zweites Leben", 
+			"wormUsed": "Holzwurm verwendet"
 			};
     }
 
@@ -217,10 +218,11 @@ class GameState {
 			"bitchSleepsAt": "Dorfschlampe schläft bei Spieler",
 			"lastBlessed": "Zuletzt gesegneter Spieler",
 			"crossbow": "Armbrust aktiv",
-			"stoneAndAmulet": "Stein oder Amulett gestorben" };
+			"stoneAndAmulet": "Stein oder Amulett gestorben",
+			"wormSet": "Holzwurm wurde freigesetzt" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", 
+		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "worm1", "worm2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
@@ -444,6 +446,10 @@ class GameState {
 			  globalRoleManager.bitch(2); break;
 			case "dog":
 			  globalRoleManager.dog(); break;
+			case "worm1":
+			  globalRoleManager.worm(1); break;
+			case "worm2":
+			  globalRoleManager.worm(2); break;
 			case "werewolves1":
 			  globalRoleManager.werewolves(1); break;
 			case "werewolves2":
@@ -540,7 +546,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Rollen: Dorfbewohner, Werwolf, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Alphawolf, Werwolfwelpe, Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi", 
+			"Bisher implementierte Haptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -624,10 +630,21 @@ class RoleManager {
 			updateGameScreenUI("Diskussion", "Die Dorfbewohner ("+names_s.slice(0, -2)+") diskutieren, wer gehängt wird.", names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
-			if (id != -1) {
-				globalGameState.getPlayerWithId(id).addProperty("gettingHanged");
+			let worm = false;
+			if (globalGameState.gameVariables["wormSet"] == true) {
+				delete globalGameState.gameVariables["wormSet"];
+				worm = true;
 			}
-			globalGameState.advanceState();
+			if (id != -1) {
+				if (!worm) {
+					globalGameState.getPlayerWithId(id).addProperty("gettingHanged");
+					globalGameState.advanceState();
+				} else {
+					updateGameScreenUI("Der Galgen bricht!", "", ["OK"], [-1]);
+				}
+			} else {
+				globalGameState.advanceState();
+			}
 		}
 	}
 	
@@ -998,6 +1015,36 @@ class RoleManager {
 			updateGameScreenUI("Michis Besitzer ("+dog.name+")", htmlString, ["OK"], [-1]);
 		} else {
 			updateGameScreenUI("Michis Besitzer ("+dog.name+")", "Michi schnüffelt nicht mehr, da sein Besitzer leider schon tot ist.", ["OK"], [-1]);
+		}
+	}
+
+	/*
+	Holzwurm
+	*/
+	worm(iteration) {
+		let worm_id = globalGameState.getPlayersWithRole("Holzwurm")[0];
+		if (!worm_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let worm = globalGameState.getPlayerWithId(worm_id);
+		if (iteration == 1) {
+			if (!worm.hasProperty("dead")) {
+				if (!worm.hasProperty("wormUsed")) {
+					updateGameScreenUI("Holzwurm ("+worm.name+")", "Möchte er den Holzwurm heute freilassen?", ["Ja", "Nein"], [1, -1]);
+				} else {
+					updateGameScreenUI("Holzwurm ("+worm.name+")", "Der Holzwurm wurde bereits befreit.", ["OK"], [-1]);
+				}
+			} else {
+				updateGameScreenUI("Holzwurm ("+worm.name+")", "Der Spieler mit dem Holzwurm ist leider schon tot.", ["OK"], [-1]);
+			}
+		} else if (iteration == 2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id == 1) {
+				globalGameState.gameVariables["wormSet"] = true;
+				worm.addProperty("wormUsed");
+			}
+			globalGameState.advanceState();
 		}
 	}
 	
