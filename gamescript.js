@@ -222,7 +222,7 @@ class GameState {
 			"wormSet": "Holzwurm wurde freigesetzt" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "worm1", "worm2", 
+		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
@@ -450,6 +450,10 @@ class GameState {
 			  globalRoleManager.worm(1); break;
 			case "worm2":
 			  globalRoleManager.worm(2); break;
+			case "robber1":
+			  globalRoleManager.robber(1); break;
+			case "robber2":
+			  globalRoleManager.robber(2); break;
 			case "werewolves1":
 			  globalRoleManager.werewolves(1); break;
 			case "werewolves2":
@@ -546,7 +550,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Haptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm", 
+			"Bisher implementierte Hauptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm, Leichenfledderer", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -1047,6 +1051,45 @@ class RoleManager {
 			globalGameState.advanceState();
 		}
 	}
+
+	/*
+	Leichenfledderer
+	*/
+	robber(iteration) {
+		let rob_id = globalGameState.getPlayersWithRole("Leichenfledderer")[0];
+		if (!rob_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let rob = globalGameState.getPlayerWithId(rob_id);
+		if (iteration == 1) {
+			if (!rob.hasProperty("dead")) {
+				const stealRoles = globalGameState.getPlayersWithProperty("dead").filter(id => id != 0).filter(id => !(["Liebestrank", "Hasstrank"].includes(globalGameState.getPlayerWithId(id).sideRole)));
+				if (stealRoles.length > 0) {
+					const names = [];
+					for (let id of stealRoles) {
+						let p = globalGameState.getPlayerWithId(id);
+						names.push(p.sideRole + " (" + p.name + ")");
+					}
+					names.push("Keine");
+					stealRoles.push(-1);
+					updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Welche Nebenrolle möchte er stehlen?", names, stealRoles);
+				} else {
+					updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Leider gibt es noch keine Nebenrollen, die er stehlen kann.", ["OK"], [-1]);
+				}
+			} else {
+				updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Der Leichenfledderer ist leider schon tot.", ["OK"], [-1]);
+			}
+		} else if (iteration == 2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id != -1) {
+				let newSideRole = globalGameState.getPlayerWithId(id).sideRole;
+				globalGameState.updatePlayerNameAndRole(id, "", "", "Keine Nebenrolle");
+				globalGameState.updatePlayerNameAndRole(rob_id, "", "", newSideRole);
+			}
+			globalGameState.advanceState();
+		}
+	}
 	
 }
 
@@ -1071,11 +1114,12 @@ class GameHistory {
 		let players = {};
 		for (let p of globalGameState.players) {
 			let id = p.id;
+			let attr = [p.name, p.mainRole, p.sideRole];
 			let props = [];
 			for (let prop of p.properties) {
 				props.push(prop);
 			}
-			players[id] = props;
+			players[id] = [props, attr];
 		}
 		let console_length = globalGameScreenConsoleHist_UI.length;
 		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI, console_length]);
@@ -1100,7 +1144,10 @@ class GameHistory {
 		for (let id in players) {
 			let p = globalGameState.getPlayerWithId(id);
 			p.clearProperties();
-			for (let prop of players[id]) {
+			p.name = players[id][1][0];
+			p.mainRole = players[id][1][1];
+			p.sideRole = players[id][1][2];
+			for (let prop of players[id][0]) {
 				p.addProperty(prop, true);
 			}
 		}

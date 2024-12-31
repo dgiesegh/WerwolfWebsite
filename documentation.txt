@@ -32,3 +32,5 @@ Nebenrollen:
                     Alle Spieler außer Werwölfe, Hexe und Nekromant riechen menschlich.
 - Holzwurm:         Der Spieler mit dem Holzwurm kann jede Nacht entscheiden, ob er den Wurm freilassen möchte.
                     Falls ja, bricht am nächsten Tag der Galgen im Zuge der Hinrichtung (d.h. der Gehängte überlebt). Einmal freigelassen, ist der Holzwurm für immer fort.
+- Leichenfledderer: Kann einmal in der Nacht die Nebenrolle eines bereits gestorbenen Spielers stehlen. Die Nebenrolle wird dadurch zurückgesetzt.
+                    Liebes-/Hasstrank können nicht gestohlen werden.
