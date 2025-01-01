@@ -514,7 +514,7 @@ class GameState {
 	Returns names of killed players
 	*/
 	updatePlayerProperties() {
-		const killedNames = [];
+		const killedIDs = [];
 		const idsToCheck = [];
 		for (let p of this.players) {
 			idsToCheck.push(p.id);
@@ -525,7 +525,7 @@ class GameState {
 			let dead = p.hasProperty("dead");
 			p.updateProperties();
 			if (!dead && p.hasProperty("dead")) {
-				killedNames.push(p.name);
+				killedIDs.push(p.id);
 				if (p.hasProperty("inLove") && globalGameState.gameVariables["loverDied"] == true) {
 					for (let p2 of this.players.filter(_p => _p.id != p.id && _p.hasProperty("inLove") && !idsToCheck.includes(_p.id))) {
 						idsToCheck.push(p2.id);
@@ -534,7 +534,7 @@ class GameState {
 			}
 		}
 		this.updateGameVariables();
-		return killedNames;
+		return killedIDs;
 	}
 	
 	/*
@@ -552,7 +552,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Hauptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Beamter <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm, Leichenfledderer", 
+			"Bisher implementierte Hauptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Beamter, Fieselotte <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm, Leichenfledderer", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -565,10 +565,10 @@ class GameState {
 	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
 	*/
 	nightEnd() {
-		const killedNamesList = this.updatePlayerProperties();
+		const killedIDsList = this.updatePlayerProperties();
 		let killedNames = "";
-		for (let n of killedNamesList) {
-			killedNames += n + ", ";
+		for (let id of killedIDsList) {
+			killedNames += this.getPlayerWithId(id).name + ", ";
 		}
 		if (!this.checkVictory()) {
 			let txt = "";
@@ -576,6 +576,10 @@ class GameState {
 				txt += "<b>"+killedNames.slice(0,-2)+"</b> hat/haben die Nacht nicht überlebt.";
 			} else {
 				txt += "Niemand ist heute Nacht gestorben.";
+			}
+			let lotte_id = this.getPlayersWithRole("Fieselotte")[0];
+			if (killedIDsList.includes(lotte_id)) {
+				txt += "<br><br> Die Fieselotte schreit!";
 			}
 			updateGameScreenUI("Der Morgen graut", txt, ["OK"], [-1]);
 		}
@@ -585,10 +589,10 @@ class GameState {
 	What happens at the end of the day. Updates player properties, displays killed players, checks victory.
 	*/
 	dayEnd() {
-		const killedNamesList = this.updatePlayerProperties();
+		const killedIDsList = this.updatePlayerProperties();
 		let killedNames = "";
-		for (let n of killedNamesList) {
-			killedNames += n + ", ";
+		for (let id of killedIDsList) {
+			killedNames += this.getPlayerWithId(id).name + ", ";
 		}
 		if (!this.checkVictory()) {
 			let txt = "";
@@ -596,6 +600,10 @@ class GameState {
 				txt += "<b>"+killedNames.slice(0,-2)+"</b> ist/sind gestorben.";
 			} else {
 				txt += "Niemand ist gestorben.";
+			}
+			let lotte_id = this.getPlayersWithRole("Fieselotte")[0];
+			if (killedIDsList.includes(lotte_id)) {
+				txt += "<br><br> Die Fieselotte schreit!";
 			}
 			updateGameScreenUI("Die Nacht bricht herein", txt, ["OK"], [-1]);
 		}
@@ -969,8 +977,8 @@ class RoleManager {
 						globalGameState.getPlayerWithId(id).addProperty("attackedByCrossbow");
 					}
 					delete globalGameState.gameVariables["crossbow"];
-					globalGameState.advanceState()
 				}
+				globalGameState.advanceState();
 			}
 		} else {
 			globalGameState.advanceState();
