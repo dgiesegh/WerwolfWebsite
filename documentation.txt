@@ -10,6 +10,7 @@ Dorfbewohner:
                     Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
 				    erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
 - Beamter:          Darf jede Nacht die Nebenrolle eines lebenden Spielers erfahren.
+- Seher:            Darf jede Nacht die Zugehörigkeit (Werwölfe/Dorfbewohner) eines lebenden Spielers erfahren.
 - Fieselotte:       Wenn die Fieselotte stirbt, kreischt sie laut und verrät dadurch ihre Rolle.
 
 

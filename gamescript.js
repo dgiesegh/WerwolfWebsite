@@ -222,7 +222,7 @@ class GameState {
 			"wormSet": "Holzwurm wurde freigesetzt" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "worm1", "worm2", "robber1", "robber2", 
+		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
@@ -448,6 +448,8 @@ class GameState {
 			  globalRoleManager.dog(); break;
 			case "clerk":
 			  globalRoleManager.clerk(); break;
+			case "oracle":
+			  globalRoleManager.oracle(); break;
 			case "worm1":
 			  globalRoleManager.worm(1); break;
 			case "worm2":
@@ -552,7 +554,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Bisher implementierte Hauptrollen (Dorf): Dorfbewohner, Priester, Kleines Mädchen, Hexe, Nekromant, Dorfschlampe, Beamter, Fieselotte <br> Bisher implementierte Hauptrollen (WW): Werwolf, Alphawolf, Werwolfwelpe <br> Bisher implementierte Nebenrollen: Liebestrank, Armbrust, Stein, Amulett, Stärketrank, Michi, Holzwurm, Leichenfledderer", 
+			"Noch nicht implementierte Hauptrollen: Schattenwolf, Räudiger Wolf, Schwein, Fips, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Dichter, Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -1121,6 +1123,36 @@ class RoleManager {
 			updateGameScreenUI("Beamter ("+clerk.name+")", htmlString, ["OK"], [-1]);
 		} else {
 			updateGameScreenUI("Beamter ("+clerk.name+")", "Der Beamte ist leider schon tot.", ["OK"], [-1]);
+		}
+	}
+
+	/*
+	Seher
+	*/
+	oracle() {
+		let oracle_id = globalGameState.getPlayersWithRole("Seher")[0];
+		if (!oracle_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let oracle = globalGameState.getPlayerWithId(oracle_id);
+		if (!oracle.hasProperty("dead")) {
+			const alive = globalGameState.getPlayersWithProperty("dead", true, [oracle_id]);
+			const werewolves = alive.filter(id => globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
+			const villagers = alive.filter(id => !globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
+			let txt = "Der Seher darf die zugehörigkeit eines lebenden Spielers erfragen.<br><br>Werwölfe: ";
+			for (let id of werewolves) {
+				txt += globalGameState.getPlayerWithId(id).name + ", ";
+			}
+			txt = txt.slice(0, -2);
+			txt += "<br>Dorfbewohner: ";
+			for (let id of villagers) {
+				txt += globalGameState.getPlayerWithId(id).name + ", ";
+			}
+			txt = txt.slice(0, -2);
+			updateGameScreenUI("Seher ("+oracle.name+")", txt, ["OK"], [-1]);
+		} else {
+			updateGameScreenUI("Seher ("+oracle.name+")", "Der Seher ist leider schon tot.", ["OK"], [-1]);
 		}
 	}
 	
