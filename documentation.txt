@@ -9,6 +9,7 @@ Dorfbewohner:
 - Dorfschlampe:     Kann jede Nacht bei sich zu Hause oder bei einem anderen Spieler verbringen. Ist sie nicht zu Haus, können Werwölfe und Hexe sie nicht direkt töten.
                     Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
 				    erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
+- Beamter:          Darf jede Nacht die Nebenrolle eines lebenden Spielers erfahren.
 
 
 Werwölfe:
