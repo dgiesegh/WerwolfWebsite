@@ -8,7 +8,7 @@ let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
 const globalGameScreenConsoleHist_UI = [];
-const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter"];
+const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert"];
 shuffleArray(globalDefaultNames);
 /*
 Update the list of players with their properties and the game variables tab.
@@ -26,6 +26,7 @@ function updateMenuColumnUI() {
 		if (globalGameRunning) {htmlString += "readonly";}
 		htmlString += "> <a href=\"#\" class=\"deleteplayer\" onclick=\"";
 		if (!globalGameRunning) {htmlString += "removePlayerUI(this)";}
+        else {htmlString += "killPlayerUI(this)";}
 		htmlString += "\">X</a> <br> <a href=\"#\" class=\"rolelink\" onclick=\"";
 		if (!globalGameRunning) {htmlString += "showMainRoleMenuUI(this)";}
 		htmlString += "\">"+player.mainRole+"</a> /";
@@ -158,6 +159,15 @@ Removes a single player.
 function removePlayerUI(player) {
     let id = Number(player.parentElement.id.at(-1));
     globalGameState.removePlayer(id);
+    updateMenuColumnUI();
+}
+
+/*
+Kills a player while the game runs.
+*/
+function killPlayerUI(player) {
+    let id = Number(player.parentElement.id.at(-1));
+    globalGameState.getPlayerWithId(id).addProperty("killedByMod");
     updateMenuColumnUI();
 }
 

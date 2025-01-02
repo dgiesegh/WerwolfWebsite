@@ -38,7 +38,8 @@ class Player {
 			"inLove": "Verliebt",
 			"attackedByCrossbow": "Von der Armbrust getroffen",
 			"extraLife": "Hat ein zweites Leben", 
-			"wormUsed": "Holzwurm verwendet"
+			"wormUsed": "Holzwurm verwendet",
+			"killedByMod": "Dem Tode geweiht"
 			};
     }
 
@@ -147,10 +148,6 @@ class Player {
 			}
 			this.removeProperty("attackedByWerewolf");
 		}
-		if (this.hasProperty("attackedByAlpha")) {
-			this.removeProperty("attackedByAlpha");
-			this.addProperty("dead"); deathReason = "Alphawolf";
-		}
 		//Hanging
 		if (this.hasProperty("gettingHanged")) {
 			this.removeProperty("gettingHanged");
@@ -180,6 +177,18 @@ class Player {
 			this.removeProperty("dead");
 			this.removeProperty("extraLife");
 			logMessageUI(this.name+" hat das zweite Leben verbraucht");
+		}
+		//Alpha kill
+		if (this.hasProperty("attackedByAlpha")) {
+			this.removeProperty("attackedByAlpha");
+			this.removeProperty("extraLife");
+			this.addProperty("dead"); deathReason = "Alphawolf";
+		}
+		//Mod kill
+		if (this.hasProperty("killedByMod")) {
+			this.removeProperty("killedByMod");
+			this.removeProperty("extraLife");
+			this.addProperty("dead"); deathReason = "göttlicher Intervention";
 		}
 		// DEATH CHECKS
 		//Console
@@ -554,7 +563,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Schattenwolf, Räudiger Wolf, Schwein, Fips, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Dichter, Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Schattenwolf, Räudiger Wolf, Schwein, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -643,7 +652,16 @@ class RoleManager {
 			}
 			names.push("Niemand");
 			ids.push(-1);
-			updateGameScreenUI("Diskussion", "Die Dorfbewohner ("+names_s.slice(0, -2)+") diskutieren, wer gehängt wird.", names, ids);
+			let txt = "Die Dorfbewohner ("+names_s.slice(0, -2)+") diskutieren, wer gehängt wird. <br>";
+			let poet_id = globalGameState.getPlayersWithRole("Dichter")[0];
+			let fips_id = globalGameState.getPlayersWithRole("Fips")[0];
+			if (poet_id != 0) {
+				txt += "<br>Der Dichter ("+globalGameState.getPlayerWithId(poet_id).name+") muss dichten.";
+			}
+			if (fips_id != 0) {
+				txt += "<br>Fips ("+globalGameState.getPlayerWithId(fips_id).name+") muss \"Werwolf\" sagen.";
+			}
+			updateGameScreenUI("Diskussion", txt, names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			let worm = false;

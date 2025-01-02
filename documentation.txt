@@ -19,6 +19,7 @@ Werwölfe:
 - Werwolf:          Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
 - Alphawolf:        Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
 - Werwolfwelpe:     Wie Werwolf. Wenn er stirbt, dürfen die Werwölfe in der nächsten Nacht zwei Spieler töten. 
+- Fips:             Muss während der täglichen Diskussion einmal Werwolf sagen. Versäumt er dies, stirbt er.
 
 
 Nebenrollen:
@@ -37,3 +38,4 @@ Nebenrollen:
                     Falls ja, bricht am nächsten Tag der Galgen im Zuge der Hinrichtung (d.h. der Gehängte überlebt). Einmal freigelassen, ist der Holzwurm für immer fort.
 - Leichenfledderer: Kann einmal in der Nacht die Nebenrolle eines bereits gestorbenen Spielers stehlen. Die Nebenrolle wird dadurch zurückgesetzt.
                     Liebes-/Hasstrank können nicht gestohlen werden.
+- Dichter:          Muss während der täglichen Diskussion dichten.
