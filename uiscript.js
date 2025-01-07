@@ -8,8 +8,9 @@ let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
 const globalGameScreenConsoleHist_UI = [];
-const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert"];
+const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert", "Erwin", "Ottilie", "Karl", "Agnes", "Marianne", "Barbara", "Valentin", "Anton", "Josef"];
 shuffleArray(globalDefaultNames);
+
 /*
 Update the list of players with their properties and the game variables tab.
 */

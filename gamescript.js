@@ -39,7 +39,8 @@ class Player {
 			"attackedByCrossbow": "Von der Armbrust getroffen",
 			"extraLife": "Hat ein zweites Leben", 
 			"wormUsed": "Holzwurm verwendet",
-			"killedByMod": "Dem Tode geweiht"
+			"killedByMod": "Dem Tode geweiht", 
+			"bitchSleepsHere": "Dorfschlampe schläft hier"
 			};
     }
 
@@ -172,6 +173,7 @@ class Player {
 		this.removeProperty("blessed");
 		this.removeProperty("firstWerewolfKill");
 		this.removeProperty("healedByPotion");
+		this.removeProperty("bitchSleepsHere");
 		//Extra life
 		if (!startsDead && this.hasProperty("dead") && this.hasProperty("extraLife")) {
 			this.removeProperty("dead");
@@ -901,6 +903,7 @@ class RoleManager {
 			if (!bitch.hasProperty("dead")) {
 				let id = Number(globalGameScreenSelectedBtnID_UI);
 				globalGameState.gameVariables["bitchSleepsAt"] = id;
+				globalGameState.getPlayerWithId(id).addProperty("bitchSleepsHere");
 			}
 			globalGameState.advanceState();
 		} else if (iteration == 3) {
