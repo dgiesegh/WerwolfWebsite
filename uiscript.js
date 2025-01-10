@@ -161,6 +161,9 @@ function removePlayerUI(player) {
     let id = Number(player.parentElement.id.at(-1));
     globalGameState.removePlayer(id);
     updateMenuColumnUI();
+    document.getElementsByClassName("gamescreen")[0].style.display = "block";
+    document.getElementsByClassName("mainrolemenu")[0].style.display = "none";
+    document.getElementsByClassName("siderolemenu")[0].style.display = "none";
 }
 
 /*

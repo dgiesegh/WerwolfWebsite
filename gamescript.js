@@ -146,6 +146,7 @@ class Player {
 		if (this.hasProperty("attackedByWerewolf")) {
 			if (!this.hasProperty("blessed") && !this.hasProperty("healedByPotion")) {
 				this.addProperty("dead"); deathReason = "Werwölfen";
+				this.addProperty("killedByWerewolf"); // For shadow wolf
 			}
 			this.removeProperty("attackedByWerewolf");
 		}
@@ -185,6 +186,7 @@ class Player {
 			this.removeProperty("attackedByAlpha");
 			this.removeProperty("extraLife");
 			this.addProperty("dead"); deathReason = "Alphawolf";
+			this.addProperty("killedByWerewolf");
 		}
 		//Mod kill
 		if (this.hasProperty("killedByMod")) {
@@ -235,7 +237,7 @@ class GameState {
 		this.currentStateID = -1;
 		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
-			"witch1", "witch2", "witch3", "bitch3", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
+			"witch1", "witch2", "witch3", "bitch3", "shadowwolf", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
     }
 	
@@ -485,6 +487,8 @@ class GameState {
 			  globalRoleManager.witch(3); break;
 			case "bitch3":
 			  globalRoleManager.bitch(3); break;
+			case "shadowwolf":
+			  globalRoleManager.shadow(); break;
 			case "crossbow1":
 			  globalRoleManager.crossbow(1); break;
 			case "crossbow2":
@@ -565,7 +569,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Schattenwolf, Räudiger Wolf, Schwein, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Räudiger Wolf, Schwein, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -1174,6 +1178,39 @@ class RoleManager {
 			updateGameScreenUI("Seher ("+oracle.name+")", txt, ["OK"], [-1]);
 		} else {
 			updateGameScreenUI("Seher ("+oracle.name+")", "Der Seher ist leider schon tot.", ["OK"], [-1]);
+		}
+	}
+
+	/*
+	Schattenwolf
+	*/
+	shadow() {
+		for (let p of globalGameState.players) {
+			p.removeProperty("killedByWerewolf");
+		}
+		globalGameHistory.saveState();
+		globalGameState.updatePlayerProperties();
+		const killedPlayers = globalGameState.getPlayersWithProperty("killedByWerewolf");
+		globalGameHistory.restoreState();
+		if (killedPlayers[0] == 0) {killedPlayers.splice(0,1);}
+		let sh_id = globalGameState.getPlayersWithRole("Schattenwolf")[0];
+		if (!sh_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let shadow = globalGameState.getPlayerWithId(sh_id);
+		if (!shadow.hasProperty("dead")) {
+			if (killedPlayers.length > 0) {
+				let htmlString = "Der Schattenwolf erfährt die Rolle eines getöteten Spielers:<br><br>";
+				for (let id of killedPlayers) {
+					htmlString += globalGameState.getPlayerWithId(id).name + ": " + globalGameState.getPlayerWithId(id).mainRole + "<br>";
+				}
+				updateGameScreenUI("Schattenwolf ("+shadow.name+")", htmlString, ["OK"], [-1]);
+			} else {
+				updateGameScreenUI("Schattenwolf ("+shadow.name+")", "Der Schattenwolf erfährt keine Rolle, da niemand von den Wölfen getötet wurde.", ["OK"], [-1]);
+			}
+		} else {
+			updateGameScreenUI("Schattenwolf ("+shadow.name+")", "Der Schattenwolf ist leider schon tot.", ["OK"], [-1]);
 		}
 	}
 	

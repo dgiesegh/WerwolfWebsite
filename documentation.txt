@@ -19,7 +19,8 @@ Werwölfe:
 - Werwolf:          Kann jede Nacht mit anderen Werwölfen eine Person auswählen, die getötet wird.
 - Alphawolf:        Wie Werwolf. Kann in der ersten Nacht, in der er der letzte verbleibende Werwolf ist, einen Spieler sicher töten (d.h. er ignoriert alle Schutzregeln).
 - Werwolfwelpe:     Wie Werwolf. Wenn er stirbt, dürfen die Werwölfe in der nächsten Nacht zwei Spieler töten. 
-- Fips:             Muss während der täglichen Diskussion einmal Werwolf sagen. Versäumt er dies, stirbt er.
+- Fips:             Wie Werwolf. Muss während der täglichen Diskussion einmal Werwolf sagen. Versäumt er dies, stirbt er.
+- Schattenwolf:     Wie Werwolf. Falls die Werwölfe einen oder mehrere Spieler erfolgreich töten, erfährt er am Ende der Nacht die Rolle eines der getöteten Spieler.
 
 
 Nebenrollen:
