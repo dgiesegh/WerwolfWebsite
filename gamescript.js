@@ -40,7 +40,10 @@ class Player {
 			"extraLife": "Hat ein zweites Leben", 
 			"wormUsed": "Holzwurm verwendet",
 			"killedByMod": "Dem Tode geweiht", 
-			"bitchSleepsHere": "Dorfschlampe schläft hier"
+			"bitchSleepsHere": "Dorfschlampe schläft hier",
+			"roleEaten": "Nebenrolle gefressen",
+			"eatUsedOnce": "Hat eine Nebenrolle gefressen",
+			"eatUsedTwice": "Hat zwei Nebenrollen gefressen"
 			};
     }
 
@@ -208,7 +211,7 @@ class Player {
 			this.addProperty("diedLastNight");
 		}
 		//Stone and amulet
-		if ((this.sideRole == "Stein" || this.sideRole == "Amulett") && !startsDead && this.hasProperty("dead")) {
+		if ((this.sideRole == "Stein" || this.sideRole == "Amulett") && !startsDead && this.hasProperty("dead") && !this.hasProperty("roleEaten")) {
 			globalGameState.gameVariables["stoneAndAmulet"] = true;
 		}
 	}
@@ -238,7 +241,8 @@ class GameState {
 		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "shadowwolf", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
-			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet"]
+			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet", 
+			"pig1", "pig2"]
     }
 	
 	// Misc
@@ -503,6 +507,10 @@ class GameState {
 			  globalRoleManager.discussion(2); break;
 			case "dayCleanup":
 			  this.dayEnd(); break;
+			case "pig1":
+			  globalRoleManager.pig(1); break;
+			case "pig2":
+			  globalRoleManager.pig(2); break;
 		}
 	}
 	
@@ -569,7 +577,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Räudiger Wolf, Schwein, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Räudiger Wolf, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -662,10 +670,16 @@ class RoleManager {
 			let poet_id = globalGameState.getPlayersWithRole("Dichter")[0];
 			let fips_id = globalGameState.getPlayersWithRole("Fips")[0];
 			if (poet_id != 0) {
-				txt += "<br>Der Dichter ("+globalGameState.getPlayerWithId(poet_id).name+") muss dichten.";
+				let poet = globalGameState.getPlayerWithId(poet_id);
+				if (!poet.hasProperty("dead") && !poet.hasProperty("roleEaten")) {
+					txt += "<br>Der Dichter ("+poet.name+") muss dichten.";
+				}
 			}
 			if (fips_id != 0) {
-				txt += "<br>Fips ("+globalGameState.getPlayerWithId(fips_id).name+") muss \"Werwolf\" sagen.";
+				let fips = globalGameState.getPlayerWithId(fips_id);
+				if (!fips.hasProperty("dead")) {
+					txt += "<br>Fips ("+fips.name+") muss \"Werwolf\" sagen.";
+				}
 			}
 			updateGameScreenUI("Diskussion", txt, names, ids);
 		} else if (iteration == 2) {
@@ -977,7 +991,7 @@ class RoleManager {
 			return;
 		}
 		let cb = globalGameState.getPlayerWithId(cb_id);
-		if (!cb.hasProperty("dead")) {
+		if (!cb.hasProperty("dead") && !cb.hasProperty("roleEaten")) {
 			if (iteration == 1) {
 				globalGameHistory.saveState();
 				globalGameState.updatePlayerProperties();
@@ -1021,7 +1035,7 @@ class RoleManager {
 				let id = globalGameState.getPlayersWithRole(role)[0];
 				if (id > 0) {
 					let p = globalGameState.getPlayerWithId(id);
-					if (!p.hasProperty("dead")) {
+					if (!p.hasProperty("dead") && !p.hasProperty("roleEaten")) {
 						p.addProperty("extraLife");
 					}
 				}
@@ -1041,7 +1055,7 @@ class RoleManager {
 			return;
 		}
 		let dog = globalGameState.getPlayerWithId(dog_id);
-		if (!dog.hasProperty("dead")) {
+		if (!dog.hasProperty("dead") && !dog.hasProperty("roleEaten")) {
 			const stinky = {};
 			for (let pid of globalGameState.getPlayersWithProperty("dead", true, [dog_id])) {
 				let p = globalGameState.getPlayerWithId(pid);
@@ -1054,6 +1068,8 @@ class RoleManager {
 				htmlString += "<br>"
 			}
 			updateGameScreenUI("Michis Besitzer ("+dog.name+")", htmlString, ["OK"], [-1]);
+		} else if (dog.hasProperty("roleEaten")) {
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", "Michis Besitzer hat seinen Hund verloren!", ["OK"], [-1]);
 		} else {
 			updateGameScreenUI("Michis Besitzer ("+dog.name+")", "Michi schnüffelt nicht mehr, da sein Besitzer leider schon tot ist.", ["OK"], [-1]);
 		}
@@ -1070,12 +1086,14 @@ class RoleManager {
 		}
 		let worm = globalGameState.getPlayerWithId(worm_id);
 		if (iteration == 1) {
-			if (!worm.hasProperty("dead")) {
+			if (!worm.hasProperty("dead") && !worm.hasProperty("roleEaten")) {
 				if (!worm.hasProperty("wormUsed")) {
 					updateGameScreenUI("Holzwurm ("+worm.name+")", "Möchte er den Holzwurm heute freilassen?", ["Ja", "Nein"], [1, -1]);
 				} else {
 					updateGameScreenUI("Holzwurm ("+worm.name+")", "Der Holzwurm wurde bereits befreit.", ["OK"], [-1]);
 				}
+			} else if (worm.hasProperty("roleEaten")) {
+				updateGameScreenUI("Holzwurm ("+worm.name+")", "Der Holzwurm wurde gefressen!", ["OK"], [-1]);
 			} else {
 				updateGameScreenUI("Holzwurm ("+worm.name+")", "Der Spieler mit dem Holzwurm ist leider schon tot.", ["OK"], [-1]);
 			}
@@ -1100,7 +1118,7 @@ class RoleManager {
 		}
 		let rob = globalGameState.getPlayerWithId(rob_id);
 		if (iteration == 1) {
-			if (!rob.hasProperty("dead")) {
+			if (!rob.hasProperty("dead") && !rob.hasProperty("roleEaten")) {
 				const stealRoles = globalGameState.getPlayersWithProperty("dead").filter(id => id != 0).filter(id => !(["Liebestrank", "Hasstrank"].includes(globalGameState.getPlayerWithId(id).sideRole)));
 				if (stealRoles.length > 0) {
 					const names = [];
@@ -1114,6 +1132,8 @@ class RoleManager {
 				} else {
 					updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Leider gibt es noch keine Nebenrollen, die er stehlen kann.", ["OK"], [-1]);
 				}
+			}  else if (rob.hasProperty("roleEaten")) {
+				updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Der Leichenfledderer hat seine Werkzuge verloren!", ["OK"], [-1]);
 			} else {
 				updateGameScreenUI("Leichenfledderer ("+rob.name+")", "Der Leichenfledderer ist leider schon tot.", ["OK"], [-1]);
 			}
@@ -1211,6 +1231,56 @@ class RoleManager {
 			}
 		} else {
 			updateGameScreenUI("Schattenwolf ("+shadow.name+")", "Der Schattenwolf ist leider schon tot.", ["OK"], [-1]);
+		}
+	}
+
+	/*
+	Das Schwein
+	*/
+	pig(iteration) {
+		let pig_id = globalGameState.getPlayersWithRole("Schwein")[0];
+		if (!pig_id) {
+			globalGameState.advanceState();
+			return;
+		}
+		let pig = globalGameState.getPlayerWithId(pig_id);
+		if (iteration == 1) {
+			if (!pig.hasProperty("dead") && !pig.hasProperty("eatUsedTwice")) {
+				const playersWithSideRole = globalGameState.getPlayersWithProperty("roleEaten", true).filter(id => globalGameState.getPlayerWithId(id).sideRole != "Keine Nebenrolle");
+				console.log(playersWithSideRole);
+				const btns = [];
+				let txt = "";
+				if (playersWithSideRole.length == 0) {
+					playersWithSideRole[0] = -1;
+					btns.push("OK");
+					txt = "Es gibt keine Nebenrollen zu stehlen."
+				} else {
+					for (let id of playersWithSideRole) {
+						btns.push(globalGameState.getPlayerWithId(id).name+": "+globalGameState.getPlayerWithId(id).sideRole);
+					}
+					btns.push("Keine");
+					playersWithSideRole.push(-1);
+					txt = "Welche Nebenrolle möchte es fressen?";
+				}
+				updateGameScreenUI("Schwein ("+pig.name+")", txt, btns, playersWithSideRole);
+			} else if (pig.hasProperty("eatUsedTwice")) {
+				updateGameScreenUI("Schwein ("+pig.name+")", "Das Schwein ist schon satt!", ["OK"], [-1]);
+			} else {
+				updateGameScreenUI("Schwein ("+pig.name+")", "Das Schwein ist leider schon tot.", ["OK"], [-1]);
+			}
+		} else if (iteration == 2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id != -1) {
+				globalGameState.getPlayerWithId(id).addProperty("roleEaten");
+				globalGameState.getPlayerWithId(id).removeProperty("extraLife");
+				if (pig.hasProperty("eatUsedOnce")) {
+					pig.removeProperty("eatUsedOnce");
+					pig.addProperty("eatUsedTwice");
+				} else {
+					pig.addProperty("eatUsedOnce");
+				}
+			}
+			globalGameState.advanceState();
 		}
 	}
 	
