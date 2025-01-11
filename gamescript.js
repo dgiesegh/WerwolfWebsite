@@ -40,6 +40,7 @@ class Player {
 			"extraLife": "Hat ein zweites Leben", 
 			"wormUsed": "Holzwurm verwendet",
 			"killedByMod": "Dem Tode geweiht", 
+			"revivedByMod": "Wird wiederbelebt", 
 			"bitchSleepsHere": "Dorfschlampe schläft hier",
 			"roleEaten": "Nebenrolle gefressen",
 			"eatUsedOnce": "Hat eine Nebenrolle gefressen",
@@ -196,6 +197,12 @@ class Player {
 			this.removeProperty("killedByMod");
 			this.removeProperty("extraLife");
 			this.addProperty("dead"); deathReason = "göttlicher Intervention";
+		}
+		//Mod revive
+		if (this.hasProperty("revivedByMod")) {
+			this.removeProperty("dead");
+			this.removeProperty("revivedByMod");
+			logMessageUI(this.name+" ersteht von den Toten auf");
 		}
 		// DEATH CHECKS
 		//Console

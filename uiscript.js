@@ -167,11 +167,24 @@ function removePlayerUI(player) {
 }
 
 /*
-Kills a player while the game runs.
+Kills/revives a player while the game runs.
 */
 function killPlayerUI(player) {
     let id = Number(player.parentElement.id.at(-1));
-    globalGameState.getPlayerWithId(id).addProperty("killedByMod");
+    let p = globalGameState.getPlayerWithId(id);
+    if (!p.hasProperty("dead")) {
+        if (!p.hasProperty("killedByMod")) {
+            p.addProperty("killedByMod");
+        } else {
+            p.removeProperty("killedByMod");
+        }
+    } else {
+        if (!p.hasProperty("revivedByMod")) {
+            p.addProperty("revivedByMod");
+        } else {
+            p.removeProperty("revivedByMod");
+        }
+    }
     updateMenuColumnUI();
 }
 
