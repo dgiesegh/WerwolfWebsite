@@ -23,7 +23,7 @@ class Player {
 		this.properties = [];
         this.readableNames = {
             "dead": "Tot",
-            "isWerewolf": "Ist Werwolf",
+            //"isWerewolf": "Ist Werwolf",
 			"attackedByWerewolf": "Vom Wolf angegriffen",
 			"gettingHanged": "Wird gehängt",
 			"blessed": "Gesegnet",
@@ -34,7 +34,7 @@ class Player {
 			"safeKillUsed": "Alpha-Angriff verwendet", 
 			"attackedByAlpha": "Vom Alphawolf angegriffen",
 			"diedLastNight": "Letzte Nacht gestorben",
-			"usedLovePotion": "Liebestrank verbraucht",
+			//"usedLovePotion": "Liebestrank verbraucht",
 			"inLove": "Verliebt",
 			"attackedByCrossbow": "Von der Armbrust getroffen",
 			"extraLife": "Hat ein zweites Leben", 
@@ -962,7 +962,7 @@ class RoleManager {
 		if (!pot.hasProperty("usedLovePotion")) {
 			if (iteration == 1) {
 				logMessageUI("Der Spieler mit dem Liebestrank ist an der Reihe");
-				const ids = globalGameState.getPlayersWithProperty("dead", true, [pot_id]);
+				const ids = globalGameState.getPlayersWithProperty("dead", true);
 				const names = [];
 				for (let id of ids) {
 					names.push(globalGameState.getPlayerWithId(id).name);

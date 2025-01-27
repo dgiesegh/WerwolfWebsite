@@ -8,7 +8,7 @@ let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
 const globalGameScreenConsoleHist_UI = [];
-const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert", "Erwin", "Ottilie", "Karl", "Agnes", "Marianne", "Barbara", "Valentin", "Anton", "Josef"];
+const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert", "Erwin", "Ottilie", "Karl", "Agnes", "Marianne", "Barbara", "Valentin", "Anton", "Josef", "Marlies", "Renate", "Werner", "Gerhard", "Ingrid", "Irmgard", "Lutz", "Hubert", "Margarethe"];
 shuffleArray(globalDefaultNames);
 
 /*
@@ -73,6 +73,9 @@ function clearPlayersUI() {
 	if (globalGameRunning) {return;}
     document.getElementsByClassName("playerlist")[0].innerHTML = "";
     globalGameState.clearPlayers();
+    document.getElementsByClassName("gamescreen")[0].style.display = "block";
+    document.getElementsByClassName("mainrolemenu")[0].style.display = "none";
+    document.getElementsByClassName("siderolemenu")[0].style.display = "none";
 }
 
 /*
