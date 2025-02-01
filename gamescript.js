@@ -613,7 +613,7 @@ class GameState {
 			}
 			let lotte_id = this.getPlayersWithRole("Fieselotte")[0];
 			if (killedIDsList.includes(lotte_id)) {
-				txt += "<br><br>"+chooseLine("lotte");
+				txt += "<br><br>"+chooseLine("lotte", this.getPlayerWithId(lotte_id).name);
 			}
 			updateGameScreenUI("Der Morgen graut", txt, ["OK"], [-1]);
 		}
@@ -637,7 +637,7 @@ class GameState {
 			}
 			let lotte_id = this.getPlayersWithRole("Fieselotte")[0];
 			if (killedIDsList.includes(lotte_id)) {
-				txt += "<br><br>"+chooseLine("lotte");
+				txt += "<br><br>"+chooseLine("lotte", this.getPlayerWithId(lotte_id).name);
 			}
 			updateGameScreenUI("Die Nacht bricht herein", txt, ["OK"], [-1]);
 		}
@@ -703,12 +703,12 @@ class RoleManager {
 					let p = globalGameState.getPlayerWithId(id);
 					p.addProperty("gettingHanged");
 					if (p.hasProperty("extraLife")) {
-						updateGameScreenUI(p.name+" überlebt!", chooseLine("execution2"), ["OK"], [-1]);
+						updateGameScreenUI(p.name+" überlebt!", chooseLine("execution2", p.name), ["OK"], [-1]);
 					} else {
-						updateGameScreenUI(p.name+" wird gehängt", chooseLine("execution1"), ["OK"], [-1]);
+						updateGameScreenUI(p.name+" wird gehängt", chooseLine("execution1", p.name), ["OK"], [-1]);
 					}
 				} else {
-					updateGameScreenUI("Der Galgen bricht!", chooseLine("execution3"), ["OK"], [-1]);
+					updateGameScreenUI("Der Galgen bricht!", chooseLine("execution3", p.name), ["OK"], [-1]);
 				}
 			} else {
 				globalGameState.advanceState();
@@ -749,7 +749,7 @@ class RoleManager {
 			let flavortext = chooseLine("werewolves")+"<br>";
 			const littleGirlID = globalGameState.getPlayersWithRole("Kleines Mädchen")[0];
 			if (littleGirlID != 0 && !globalGameState.getPlayerWithId(littleGirlID).hasProperty("dead")) {
-				flavortext += chooseLine("girl")+"<br>";
+				flavortext += chooseLine("girl", globalGameState.getPlayerWithId(littleGirlID).name)+"<br>";
 			}
 			flavortext += "<br>";
 			if (alphaKill) {
@@ -792,7 +792,7 @@ class RoleManager {
 		}
 		let priest = globalGameState.getPlayerWithId(priest_id);
 		if (iteration == 1) {
-			let flavortext = chooseLine("priest")+"<br><br>";
+			let flavortext = chooseLine("priest", priest.name)+"<br><br>";
 			logMessageUI("Der Priester ist an der Reihe");
 			if (priest.hasProperty("dead")) {
 				updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Der Priester ist leider schon tot.", ["OK"], [-1]);
@@ -832,7 +832,7 @@ class RoleManager {
 		}
 		let witch = globalGameState.getPlayerWithId(witch_id);
 		if (iteration == 1) {
-			let flavortext = chooseLine("witch1")+"<br><br>";
+			let flavortext = chooseLine("witch1", witch.name)+"<br><br>";
 			logMessageUI("Die Hexe ist an der Reihe");
 			if (witch.hasProperty("dead")) {
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["OK"], [-1]);
@@ -850,7 +850,7 @@ class RoleManager {
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann das Opfer leider nicht retten.", ["Ok"], [-1]);
 			}
 		} else if (iteration == 2) {
-			let flavortext = chooseLine("witch2")+"<br><br>";
+			let flavortext = chooseLine("witch2", witch.name)+"<br><br>";
 			if (witch.hasProperty("dead")) {
 				globalGameState.advanceState();
 			} else if (globalGameScreenSelectedBtnID_UI != -1) {
@@ -891,7 +891,7 @@ class RoleManager {
 		}
 		logMessageUI("Der Nekromant ist an der Reihe");
 		let necro = globalGameState.getPlayerWithId(necro_id);
-		let flavortext = chooseLine("necro")+"<br><br>";
+		let flavortext = chooseLine("necro", necro.name)+"<br><br>";
 		if (necro.hasProperty("dead")) {
 			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Der Nekromant ist leider schon tot.", ["Ok"], [-1]);
 			return;
@@ -921,7 +921,7 @@ class RoleManager {
 		}
 		let bitch = globalGameState.getPlayerWithId(bitch_id);
 		if (iteration == 1) {
-			let flavortext = chooseLine("bitch")+"<br><br>";
+			let flavortext = chooseLine("bitch", bitch.name)+"<br><br>";
 			logMessageUI("Die Dorfschlampe ist an der Reihe");
 			if (bitch.hasProperty("dead")) {
 				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Die Dorfschlampe ist leider schon tot.", ["Ok"], [-1]);
@@ -973,7 +973,7 @@ class RoleManager {
 		}
 		let pot = globalGameState.getPlayerWithId(pot_id);
 		if (!pot.hasProperty("usedLovePotion")) {
-			let flavortext = chooseLine("lovepot")+"<br><br>";
+			let flavortext = chooseLine("lovepot", pot.name)+"<br><br>";
 			if (iteration == 1) {
 				logMessageUI("Der Spieler mit dem Liebestrank ist an der Reihe");
 				const ids = globalGameState.getPlayersWithProperty("dead", true);
@@ -1027,7 +1027,7 @@ class RoleManager {
 					ids.push(-1);
 					names.push("Niemanden");
 					globalGameState.gameVariables["crossbow"] = true;
-					let flavortext = chooseLine("crossbow")+"<br><br>";
+					let flavortext = chooseLine("crossbow", cb.name)+"<br><br>";
 					updateGameScreenUI("Armbrust ("+cb.name+")", flavortext+"Der Spieler mit der Armbrust darf noch einen letzten Schuss abfeuern. Wen reißt er mit in den Tod?", names, ids);
 				} else {
 					globalGameHistory.restoreState();
@@ -1077,7 +1077,7 @@ class RoleManager {
 			return;
 		}
 		let dog = globalGameState.getPlayerWithId(dog_id);
-		let flavortext = chooseLine("dog")+"<br><br>";
+		let flavortext = chooseLine("dog", dog.name)+"<br><br>";
 		if (!dog.hasProperty("dead") && !dog.hasProperty("roleEaten")) {
 			const stinky = {};
 			for (let pid of globalGameState.getPlayersWithProperty("dead", true, [dog_id])) {
@@ -1109,7 +1109,7 @@ class RoleManager {
 		}
 		let worm = globalGameState.getPlayerWithId(worm_id);
 		if (iteration == 1) {
-			let flavortext = !worm.hasProperty("wormUsed") ? chooseLine("woodworm") : chooseLine("woodwormgone");
+			let flavortext = !worm.hasProperty("wormUsed") ? chooseLine("woodworm", worm.name) : chooseLine("woodwormgone", worm.name);
 			flavortext += "<br><br>";
 			if (!worm.hasProperty("dead") && !worm.hasProperty("roleEaten")) {
 				if (!worm.hasProperty("wormUsed")) {
@@ -1143,7 +1143,7 @@ class RoleManager {
 		}
 		let rob = globalGameState.getPlayerWithId(rob_id);
 		if (iteration == 1) {
-			let flavortext = chooseLine("robber")+"<br><br>";
+			let flavortext = chooseLine("robber", rob.name)+"<br><br>";
 			if (!rob.hasProperty("dead") && !rob.hasProperty("roleEaten")) {
 				const stealRoles = globalGameState.getPlayersWithProperty("dead").filter(id => id != 0).filter(id => !(["Liebestrank", "Hasstrank"].includes(globalGameState.getPlayerWithId(id).sideRole)));
 				if (stealRoles.length > 0) {
@@ -1184,7 +1184,7 @@ class RoleManager {
 			return;
 		}
 		let clerk = globalGameState.getPlayerWithId(clerk_id);
-		let flavortext = chooseLine("clerk")+"<br><br>";
+		let flavortext = chooseLine("clerk", clerk.name)+"<br><br>";
 		if (!clerk.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [clerk_id]);
 			let htmlString = "Er darf nun die Nebenrolle eines lebenden Spielers erfahren. <br><br>";
@@ -1208,7 +1208,7 @@ class RoleManager {
 			return;
 		}
 		let oracle = globalGameState.getPlayerWithId(oracle_id);
-		let flavortext = chooseLine("seer")+"<br><br>";
+		let flavortext = chooseLine("seer", oracle.name)+"<br><br>";
 		if (!oracle.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [oracle_id]);
 			const werewolves = alive.filter(id => globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
@@ -1247,7 +1247,7 @@ class RoleManager {
 			return;
 		}
 		let shadow = globalGameState.getPlayerWithId(sh_id);
-		let flavortext = chooseLine("shadowwolf")+"<br><br>";
+		let flavortext = chooseLine("shadowwolf", shadow.name)+"<br><br>";
 		if (!shadow.hasProperty("dead")) {
 			if (killedPlayers.length > 0) {
 				let htmlString = "Der Schattenwolf erfährt die Rolle eines getöteten Spielers:<br><br>";
@@ -1274,7 +1274,7 @@ class RoleManager {
 		}
 		let pig = globalGameState.getPlayerWithId(pig_id);
 		if (iteration == 1) {
-			let flavortext = chooseLine("pig")+"<br><br>";
+			let flavortext = chooseLine("pig", pig.name)+"<br><br>";
 			if (!pig.hasProperty("dead") && !pig.hasProperty("eatUsedTwice")) {
 				const playersWithSideRole = globalGameState.getPlayersWithProperty("roleEaten", true).filter(id => globalGameState.getPlayerWithId(id).sideRole != "Keine Nebenrolle");
 				console.log(playersWithSideRole);

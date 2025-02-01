@@ -1,3 +1,8 @@
+/*
+This script contains all flavor text options as a list of possible settings, each consisting of a dictionary
+of possible lines.
+*/
+
 const globalFlavorLines = [
     {
         "sundown1": ["Das Dorf liegt ruhig unter dem roten Himmel der untergehenden Sonne."],
@@ -9,9 +14,9 @@ const globalFlavorLines = [
         "loverswin": ["Erschüttert von den Ereignissen der letzten Tage macht sich das Liebespaar auf, das nun leere Dorf zu verlassen und in ein neues Leben aufzubrechen."],
         "discussion": ["Die Dorfbewohner versammeln sich auf dem Marktplatz."],
         "execution1": ["XY wird an den Galgen geführt und unter betroffenem Schweigen gehängt."],
-        "execution2": ["XY fällt, der Strick spannt sich - und reißt. Er liegt prustend am Boden, hat aber überlebt."],
+        "execution2": ["XY fällt, der Strick spannt sich - und reißt. Er/sie liegt prustend am Boden, hat aber überlebt."],
         "execution3": ["XY fällt, der Strick spannt sich - und mit einem morschen Krachen bricht der Galgen."],
-        "execution4": ["Noch bevor XY erfasst werden kann, hebt er seine Hand und alle sehen den Siegelring: \"Wenn ihr mich hängt, wird meine Familie euch alle holen!\""],
+        "execution4": ["Noch bevor XY erfasst werden kann, hebt er/sie seine Hand und alle sehen den Siegelring: \"Wenn ihr mich hängt, wird meine Familie euch alle holen!\""],
         "werewolves": ["Im Licht des Mondes hallt ein heulen über das Dorf und Schatten schleichen durch die Gassen."],
         "shadowwolf": ["Die Schatten werden dunkler und ein Wolf blickt in das Reich der Toten."],
         "dirtywolf": ["Ein giftiger Gestank zieht durchs Dorf, als der Schatten eines Wolfes auf der Suche nach einem besonderen Opfer durchs Dorf zieht."],
@@ -26,15 +31,15 @@ const globalFlavorLines = [
         "homeless": ["In Erwartung der eisigen Nacht sucht der Obdachlose einen Ort zum Pennen."],
         "clerk": ["Noch spät im Archiv prüft der Beamte die Richtigkeit der Dorfchronik."],
         "lotte": ["Kreiiiiiiiiiiisch!"],
-        "crossbow": ["Schwerverletzt schafft es XY, noch einen Bolzen in seine Armbrust einzulegen."],
-        "silence": ["Einst erhielt XY von einem Alchemisten einen Trank, der ewige Stille versprach. War nun die Zeit dafür gekommen?"],
-        "robber": ["Mit Spitzhacke und Schaufel macht sich XY auf, im Dunkel der Nacht den Friedhof umzugraben."],
+        "crossbow": ["Schwerverletzt schafft es XY, noch einen Bolzen in seine/ihre Armbrust einzulegen."],
+        "silence": ["Einst erhielt er von einem Alchemisten einen Trank, der ewige Stille versprach. War nun die Zeit dafür gekommen?"],
+        "robber": ["Mit Spitzhacke und Schaufel macht sich er auf, im Dunkel der Nacht den Friedhof umzugraben."],
         "dog": ["Als Michis Besitzer noch spät mit ihm Gassi geht, erschnuppert er auf einmal eine interessante Spur..."],
-        "lovepot": ["XY wollte die beiden schon immer verkuppeln, doch mit dem Trank, den er kürzlich von der Hexe erwarb, bietet sich nun die perfekte Gelegenheit..."],
+        "lovepot": ["Sie wollte die beiden schon immer verkuppeln, doch mit dem Trank, den sie kürzlich von der Hexe erwarb, bietet sich nun die perfekte Gelegenheit..."],
         "hatepot": ["Schadenfroh holt XY seinen Trank aus dem Keller - wer soll sich hassen, und wer wird seinen Hass überleben?"],
         "plague": ["Der süße Geruch des Todes wabert über das Dorf, als die Eiterblasen des Verstorbenen platzen und Krankheit das Dorf befällt."],
-        "woodworm": ["XY brütet nachdenklich über dem Terrarium, während er seinen Wurm mit Sägemehl füttert."],
-        "woodwormgone": ["Traurig sitzt XY an seinem leeren Terrarium. Wo mag sein Wurm nun sein? Geht es ihm jetzt besser?"]
+        "woodworm": ["Der Dorfbewohner mit dem Holzwurm brütet nachdenklich über dem Terrarium, während er seinen Wurm mit Sägemehl füttert."],
+        "woodwormgone": ["Traurig sitzt er an seinem leeren Terrarium. Wo mag sein Wurm nun sein? Geht es ihm jetzt besser?"]
     }
 ]
 
