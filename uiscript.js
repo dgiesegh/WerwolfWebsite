@@ -22,7 +22,15 @@ function updateMenuColumnUI() {
     for (let id=1; id<=globalGameState.getNumPlayers(); id++) {
         let player = globalGameState.getPlayerWithId(id);
         htmlString += "<div class=\"player\" id=\"Player"+id+"\"";
-		if (player.hasProperty("dead")) {htmlString += " style=\"background-color: crimson\"";}
+		if (player.hasProperty("dead")) {
+            htmlString += " style=\"background-color: Tomato\"";
+        } else if (player.hasProperty("isWerewolf") && globalGameRunning) {
+            htmlString += " style=\"background-color: SteelBlue\"";
+        } else if (player.hasProperty("inLove") && globalGameRunning) {
+            htmlString += " style=\"background-color: LightPink\"";
+        } else if (globalGameRunning) {
+            htmlString += " style=\"background-color: LightGreen\"";
+        }
 		htmlString += "> <input type=\"text\" class=\"name\" value=\""+player.name+"\" onchange=\"updateNameUI(this)\" ";
 		if (globalGameRunning) {htmlString += "readonly";}
 		htmlString += "> <a href=\"#\" class=\"deleteplayer\" onclick=\"";

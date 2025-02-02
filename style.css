@@ -137,6 +137,14 @@
 	font-size: 1em;
 	line-height: 1.4;
  }
+
+ .playercolumn .playermenu .playerlist .player a:link, .playercolumn .playermenu .playerlist .player a:visited, .playercolumn .playermenu .playerlist .player a:hover {
+   color: black;
+ }
+
+ .playercolumn .playermenu .playerlist .player a:active {
+   color: slategray;
+ }
  
  .playercolumn .playermenu .playerlist .player .name {
 	font-size: 1em;
