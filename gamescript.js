@@ -243,10 +243,11 @@ class GameState {
 			"lastBlessed": "Zuletzt gesegneter Spieler",
 			"crossbow": "Armbrust aktiv",
 			"stoneAndAmulet": "Stein oder Amulett gestorben",
-			"wormSet": "Holzwurm wurde freigesetzt" };
+			"wormSet": "Holzwurm wurde freigesetzt",
+			"gameStarting": "Spiel beginnt" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
+		this.states = ["gamestart", "lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "shadowwolf", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet", 
@@ -427,6 +428,7 @@ class GameState {
 		logMessageUI("Spiel beginnt");
 		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameRunning = true;
+		this.gameVariables["gameStarting"] = true;
 		chooseRandomSetting();
 		updateMenuColumnUI();
 		this.advanceState();
@@ -454,6 +456,8 @@ class GameState {
 	*/
 	callState() {
 		switch(this.currentState) {
+			case "gamestart":
+			  this.gameStart(); break;
 			case "lovepotion1":
 			  globalRoleManager.lovepotion(1); break;
 			case "lovepotion2":
@@ -593,7 +597,21 @@ class GameState {
 		logMessageUI("Spiel endet");
 	}
 	
-	// Night and day cleanups
+	// Night and day cleanups, first game screen
+
+	/*
+	Displays setting intro at beginning of first night
+	*/
+
+	gameStart() {
+		if (this.gameVariables["gameStarting"] == true) {
+			let flavortext = chooseLine("sundown1");
+			updateGameScreenUI("Die Nacht bricht herein", flavortext, ["OK"], [-1]);
+			delete this.gameVariables["gameStarting"];
+		} else {
+			this.advanceState();
+		}
+	}
 	
 	/*
 	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
@@ -690,7 +708,7 @@ class RoleManager {
 					txt += "<br>Fips ("+fips.name+") muss \"Werwolf\" sagen.";
 				}
 			}
-			updateGameScreenUI("Diskussion", txt, names, ids);
+			updateGameScreenUI("Diskussion", txt+"<br>Wer wird gehängt?", names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			let worm = false;
@@ -985,7 +1003,7 @@ class RoleManager {
 			} else if (iteration == 2) {
 				let selected_id = Number(globalGameScreenSelectedBtnID_UI);
 				globalGameState.getPlayerWithId(selected_id).addProperty("inLove");
-				const ids = globalGameState.getPlayersWithProperty("dead", true, [pot_id, selected_id]);
+				const ids = globalGameState.getPlayersWithProperty("dead", true, [selected_id]);
 				const names = [];
 				for (let id of ids) {
 					names.push(globalGameState.getPlayerWithId(id).name);
