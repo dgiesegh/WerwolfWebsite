@@ -24,5 +24,5 @@ Randomly chooses a line from the current setting given the line key. Replaces XY
 */
 function chooseLine(key, name="<dummy>") {
     let line = globalCurrentSetting[key][Math.floor(Math.random() * (globalCurrentSetting[key].length-1))];
-    return ("<i>"+line+"</i>").replace("XY", name);
+    return ("<i>"+line+"</i>").replaceAll("XY", name);
 }
