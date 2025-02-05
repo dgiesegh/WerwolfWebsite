@@ -9,6 +9,7 @@ GameHistory - saves the GameState during the game to allow to revert to previous
 //globals
 let globalGameRunning = false;
 let globalCurrentSetting = undefined;
+const globalDummyRoles = [];
 
 /*
 Class representing a single player.
@@ -247,7 +248,8 @@ class GameState {
 			"gameStarting": "Spiel beginnt" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
-		this.states = ["gamestart", "lovepotion1", "lovepotion2", "lovepotion3", "necro", "priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
+		this.states = ["gamestart", "lovepotion1", "lovepotion2", "lovepotion3", "sickwolf1", "sickwolf2", "necro",
+			"priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "shadowwolf", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet", 
@@ -317,18 +319,18 @@ class GameState {
     }
 	
 	/*
-	Returns the player with the given id.
+	Returns the player with the given id if he exists else -1.
 	*/
     getPlayerWithId(id) {
         if (id > 0 && id <= this.getNumPlayers()) {
             return this.players[id-1];
         }
-        console.error("Invalid player id.");
-        return null;
+        if (id != -1) {console.error("Invalid player id.");}
+        return -1;
     }
 	
 	/*
-	Returns player id(s) with specified role, 0 if no players are found.
+	Returns player id(s) with specified role, [0] if no players are found, [-1] if dummy
 	*/
 	getPlayersWithRole(role) {
 		let ids = [];
@@ -338,6 +340,9 @@ class GameState {
 			}
 		}
 		if (ids.length == 0) {
+			if (globalDummyRoles.includes(role)) {
+				return [-1];
+			}
 			return [0];
 		}
 		return ids;
@@ -371,7 +376,7 @@ class GameState {
 	//Game logic
 	
 	/*
-	Updates the game variables that can be inferred from the player list / game state (rn only werewolf/villager counts)
+	Updates the game variables that can be inferred from the player list / game state
 	*/
 	updateGameVariables() {
 		this.gameVariables["werewolves"] = 0;
@@ -404,6 +409,9 @@ class GameState {
 			return false;
 		}
 		const roles = [];
+		for (let p of globalDummyRoles) {
+			roles.push(p);
+		}
 		for (let p of this.players) {
 			if (p.mainRole != "Dorfbewohner" && p.mainRole != "Werwolf") {roles.push(p.mainRole);}
 			if (p.sideRole != "Keine Nebenrolle") {roles.push(p.sideRole);}
@@ -464,6 +472,10 @@ class GameState {
 			  globalRoleManager.lovepotion(2); break;
 			case "lovepotion3":
 			  globalRoleManager.lovepotion(3); break;
+			case "sickwolf1":
+			  globalRoleManager.sickWolf(1); break;
+			case "sickwolf2":
+			  globalRoleManager.sickWolf(2); break;
 			case "necro":
 			  globalRoleManager.necro(); break;
 			case "priest1":
@@ -538,8 +550,10 @@ class GameState {
 			updateGameScreenUI("Das Liebespaar gewinnt!", chooseLine("loverswin"), ["OK"], ["endGame"]);
 			return true;
 		} else if (this.gameVariables["werewolves"]==0) {
-			updateGameScreenUI("Die Dorfbewohner gewinnen!", chooseLine("villagewin"), ["OK"], ["endGame"]);
-			return true;
+			if (!(this.getPlayersWithRole("Räudiger Wolf")[0] != 0 && this.gameVariables["firstWerewolfDead"] == true)) {
+				updateGameScreenUI("Die Dorfbewohner gewinnen!", chooseLine("villagewin"), ["OK"], ["endGame"]);
+				return true;
+			}
 		} else if (this.gameVariables["villagers"]==0) {
 			updateGameScreenUI("Die Werwölfe gewinnen!", chooseLine("wwwin"), ["OK"], ["endGame"]);
 			return true;
@@ -549,9 +563,10 @@ class GameState {
 
 	/*
 	Updates all player properties (used at day/night end and by crossbow) (handling lovers)
-	Returns names of killed players
+	Returns ids of killed players
 	*/
 	updatePlayerProperties() {
+		let allWolvesAlive = (this.getPlayersWithProperty("dead", false, this.getPlayersWithProperty("isWerewolf", true)) == 0); 
 		const killedIDs = [];
 		const idsToCheck = [];
 		for (let p of this.players) {
@@ -572,6 +587,10 @@ class GameState {
 			}
 		}
 		this.updateGameVariables();
+		let allWolvesAliveNow = (this.getPlayersWithProperty("dead", false, this.getPlayersWithProperty("isWerewolf", true)) == 0); 
+		if (allWolvesAlive && !allWolvesAliveNow) {
+			this.gameVariables["firstWerewolfDead"] = true;
+		}
 		return killedIDs;
 	}
 	
@@ -586,11 +605,12 @@ class GameState {
 		this.gameVariables = {"werewolves": 0, "villagers": 0 };
 		this.updateGameVariables();
 		globalGameRunning = false;
+		globalDummyRoles.splice(0, globalDummyRoles.length);
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Räudiger Wolf, Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -607,7 +627,7 @@ class GameState {
 		if (this.gameVariables["gameStarting"] == true) {
 			let flavortext = chooseLine("sundown1");
 			updateGameScreenUI("Die Nacht bricht herein", flavortext, ["OK"], [-1]);
-			delete this.gameVariables["gameStarting"];
+			// gameStarting deleted by sick wolf
 		} else {
 			this.advanceState();
 		}
@@ -766,7 +786,7 @@ class RoleManager {
 			}
 			let flavortext = chooseLine("werewolves")+"<br>";
 			const littleGirlID = globalGameState.getPlayersWithRole("Kleines Mädchen")[0];
-			if (littleGirlID != 0 && !globalGameState.getPlayerWithId(littleGirlID).hasProperty("dead")) {
+			if (littleGirlID != 0) {
 				flavortext += chooseLine("girl", globalGameState.getPlayerWithId(littleGirlID).name)+"<br>";
 			}
 			flavortext += "<br>";
@@ -803,8 +823,8 @@ class RoleManager {
 	Priester
 	*/
 	priest(iteration) {
-		let priest_id = -1;
-		if (!(priest_id = globalGameState.getPlayersWithRole("Priester")[0])) {
+		let priest_id = globalGameState.getPlayersWithRole("Priester")[0];
+		if (priest_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -812,21 +832,23 @@ class RoleManager {
 		if (iteration == 1) {
 			let flavortext = chooseLine("priest", priest.name)+"<br><br>";
 			logMessageUI("Der Priester ist an der Reihe");
-			if (priest.hasProperty("dead")) {
+			if (priest == -1) {
+				updateGameScreenUI("Priester", flavortext+"Der Priester ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+			} else if (priest.hasProperty("dead")) {
 				updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Der Priester ist leider schon tot.", ["OK"], [-1]);
-				return;
+			} else {
+				const names = [];
+				const excl = [priest_id];
+				if (globalGameState.gameVariables["lastBlessed"] != undefined) {
+					excl.push(globalGameState.gameVariables["lastBlessed"]);
+				}
+				const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
+				for (let i of ids) {
+					names.push(globalGameState.getPlayerWithId(i).name);
+				}
+				names.push("Keines"); ids.push(-1);
+				updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Welches Haus wird gesegnet?", names, ids);
 			}
-			const names = [];
-			const excl = [priest_id];
-			if (globalGameState.gameVariables["lastBlessed"] != undefined) {
-				excl.push(globalGameState.gameVariables["lastBlessed"]);
-			}
-			const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
-			for (let i of ids) {
-				names.push(globalGameState.getPlayerWithId(i).name);
-			}
-			names.push("Keines"); ids.push(-1);
-			updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Welches Haus wird gesegnet?", names, ids);
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			if (id != -1) {
@@ -843,8 +865,8 @@ class RoleManager {
 	Hexe
 	*/
 	witch(iteration) {
-		let witch_id = -1;
-		if (!(witch_id = globalGameState.getPlayersWithRole("Hexe")[0])) {
+		let witch_id = globalGameState.getPlayersWithRole("Hexe")[0];
+		if (witch_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -852,7 +874,9 @@ class RoleManager {
 		if (iteration == 1) {
 			let flavortext = chooseLine("witch1", witch.name)+"<br><br>";
 			logMessageUI("Die Hexe ist an der Reihe");
-			if (witch.hasProperty("dead")) {
+			if (witch == -1) {
+				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+			} else if (witch.hasProperty("dead")) {
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["OK"], [-1]);
 			} else if (!witch.hasProperty("healUsed")) {
 				const victim_ids = globalGameState.getPlayersWithProperty("attackedByWerewolf");
@@ -869,8 +893,10 @@ class RoleManager {
 			}
 		} else if (iteration == 2) {
 			let flavortext = chooseLine("witch2", witch.name)+"<br><br>";
-			if (witch.hasProperty("dead")) {
-				globalGameState.advanceState();
+			if (witch == -1) {
+				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+			} else if (witch.hasProperty("dead")) {
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["OK"], [-1]);
 			} else if (globalGameScreenSelectedBtnID_UI != -1) {
 				globalGameState.getPlayerWithId(globalGameScreenSelectedBtnID_UI).addProperty("healedByPotion");
 				witch.addProperty("healUsed");
@@ -888,7 +914,7 @@ class RoleManager {
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann leider niemanden mehr töten.", ["Ok"], [-1]);
 			}
 		} else if (iteration == 3) {
-			if (!witch.hasProperty("dead")) {
+			if (witch != -1 && !witch.hasProperty("dead")) {
 				if (globalGameScreenSelectedBtnID_UI != -1) {
 					globalGameState.getPlayerWithId(globalGameScreenSelectedBtnID_UI).addProperty("attackedByPotion");
 					witch.addProperty("killUsed");
@@ -902,29 +928,31 @@ class RoleManager {
 	Nekromant
 	*/
 	necro() {
-		let necro_id = -1;
-		if (!(necro_id = globalGameState.getPlayersWithRole("Nekromant")[0])) {
+		let necro_id = globalGameState.getPlayersWithRole("Nekromant")[0];
+		if (necro_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
 		logMessageUI("Der Nekromant ist an der Reihe");
 		let necro = globalGameState.getPlayerWithId(necro_id);
 		let flavortext = chooseLine("necro", necro.name)+"<br><br>";
-		if (necro.hasProperty("dead")) {
+		if (necro == -1) {
+			updateGameScreenUI("Nekromant", flavortext+"Der Nekromant ist nicht (mehr) im Spiel.", ["Ok"], [-1]);
+		} else if (necro.hasProperty("dead")) {
 			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Der Nekromant ist leider schon tot.", ["Ok"], [-1]);
-			return;
-		}
-		const dead = globalGameState.getPlayersWithProperty("dead");
-		console.log(dead);
-		if (dead[0] != 0) {
-			let name_str = "Der Nekromant darf die Rolle eines toten Spielers erfragen: <br><br>";
-			for (let dead_id of dead) {
-				let p = globalGameState.getPlayerWithId(dead_id);
-				name_str += p.name + ": " + p.mainRole + "<br><br>";
-			}
-			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+name_str, ["Ok"], [-1]);
 		} else {
-			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Es ist leider noch niemand gestorben.", ["Ok"], [-1]);
+			const dead = globalGameState.getPlayersWithProperty("dead");
+			console.log(dead);
+			if (dead[0] != 0) {
+				let name_str = "Der Nekromant darf die Rolle eines toten Spielers erfragen: <br><br>";
+				for (let dead_id of dead) {
+					let p = globalGameState.getPlayerWithId(dead_id);
+					name_str += p.name + ": " + p.mainRole + "<br><br>";
+				}
+				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+name_str, ["Ok"], [-1]);
+			} else {
+				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Es ist leider noch niemand gestorben.", ["Ok"], [-1]);
+			}
 		}
 	}
 	
@@ -941,29 +969,31 @@ class RoleManager {
 		if (iteration == 1) {
 			let flavortext = chooseLine("bitch", bitch.name)+"<br><br>";
 			logMessageUI("Die Dorfschlampe ist an der Reihe");
-			if (bitch.hasProperty("dead")) {
+			if (bitch == -1) {
+				updateGameScreenUI("Dorfschlampe", flavortext+"Die Dorfschlampe ist nicht (mehr) im Spiel.", ["Ok"], [-1]);
+			} else if (bitch.hasProperty("dead")) {
 				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Die Dorfschlampe ist leider schon tot.", ["Ok"], [-1]);
-				return;
-			}
-			const excl = [];
-			if (globalGameState.gameVariables["bitchSleepsAt"] != undefined && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
-				excl.push(globalGameState.gameVariables["bitchSleepsAt"]);
-			}
-			const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
-			const names = [];
-			for (let id of ids) {
-				names.push(globalGameState.getPlayerWithId(id).name);
-			}
-			updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Wo möchte sie heute Nacht schlafen?", names, ids);
+			} else {
+				const excl = [];
+				if (globalGameState.gameVariables["bitchSleepsAt"] != undefined && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
+					excl.push(globalGameState.gameVariables["bitchSleepsAt"]);
+				}
+				const ids = globalGameState.getPlayersWithProperty("dead", true, excl);
+				const names = [];
+				for (let id of ids) {
+					names.push(globalGameState.getPlayerWithId(id).name);
+				}
+				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Wo möchte sie heute Nacht schlafen?", names, ids);
+			}		
 		} else if (iteration == 2) {
-			if (!bitch.hasProperty("dead")) {
+			if (bitch != -1 && !bitch.hasProperty("dead")) {
 				let id = Number(globalGameScreenSelectedBtnID_UI);
 				globalGameState.gameVariables["bitchSleepsAt"] = id;
 				globalGameState.getPlayerWithId(id).addProperty("bitchSleepsHere");
 			}
 			globalGameState.advanceState();
 		} else if (iteration == 3) {
-			if (!bitch.hasProperty("dead") && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
+			if (bitch != -1 && !bitch.hasProperty("dead") && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
 				bitch.removeProperty("healedByPotion");
 				let p = globalGameState.getPlayerWithId(globalGameState.gameVariables["bitchSleepsAt"]);
 				for (let prop of ["attackedByPotion", "attackedByWerewolf", "blessed"]) {
@@ -1197,13 +1227,15 @@ class RoleManager {
 	*/
 	clerk() {
 		let clerk_id = globalGameState.getPlayersWithRole("Beamter")[0];
-		if (!clerk_id) {
+		if (clerk_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
 		let clerk = globalGameState.getPlayerWithId(clerk_id);
 		let flavortext = chooseLine("clerk", clerk.name)+"<br><br>";
-		if (!clerk.hasProperty("dead")) {
+		if (clerk == -1) {
+			updateGameScreenUI("Beamter", flavortext+"Der Beamte ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+		} else if (!clerk.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [clerk_id]);
 			let htmlString = "Er darf nun die Nebenrolle eines lebenden Spielers erfahren. <br><br>";
 			for (let id of alive) {
@@ -1221,13 +1253,15 @@ class RoleManager {
 	*/
 	oracle() {
 		let oracle_id = globalGameState.getPlayersWithRole("Seher")[0];
-		if (!oracle_id) {
+		if (oracle_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
 		let oracle = globalGameState.getPlayerWithId(oracle_id);
 		let flavortext = chooseLine("seer", oracle.name)+"<br><br>";
-		if (!oracle.hasProperty("dead")) {
+		if (oracle == -1) {
+			updateGameScreenUI("Seher", flavortext+"Der Seher ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+		} else if (!oracle.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [oracle_id]);
 			const werewolves = alive.filter(id => globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
 			const villagers = alive.filter(id => !globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
@@ -1331,6 +1365,48 @@ class RoleManager {
 			globalGameState.advanceState();
 		}
 	}
+
+	/*
+	Räudiger Wolf
+	*/
+	sickWolf(iteration) {
+		let sick_id = globalGameState.getPlayersWithRole("Räudiger Wolf")[0];
+		let firstWerewolfDead = globalGameState.gameVariables["firstWerewolfDead"] == true;
+		if (firstWerewolfDead) { delete globalGameState.gameVariables["firstWerewolfDead"]; }
+		if (globalGameState.gameVariables["gameStarting"] == true) {
+			delete globalGameState.gameVariables["gameStarting"];
+			sick_id = 0;
+		}
+		if (sick_id == 0) {
+			globalGameState.advanceState();
+			return;
+		}
+		let sick = globalGameState.getPlayerWithId(sick_id);
+		if (iteration == 1) {
+			let flavortext = chooseLine("dirtywolf", sick.name)+"<br><br>";
+			if (firstWerewolfDead) {
+				const ww = globalGameState.getPlayersWithProperty("isWerewolf");
+				const ids = globalGameState.getPlayersWithProperty("dead", true, ww);
+				const btns = [];
+				for (let id of ids) {
+					btns.push(globalGameState.getPlayerWithId(id).name);
+				}
+				let txt = "Wer wird zum Werwolf?";
+				updateGameScreenUI("Räudiger Wolf ("+sick.name+")", flavortext+txt, btns, ids);
+			} else {
+				let txt = "Der räudige Wolf kann diese Nacht nichts tun.";
+				updateGameScreenUI("Räudiger Wolf ("+sick.name+")", flavortext+txt, ["OK"], [-1]);
+			}
+		} else if (iteration == 2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id != -1) {
+				let p = globalGameState.getPlayerWithId(id);
+				globalDummyRoles.push(p.mainRole);
+				p.updateNameAndRole("", "Werwolf", "");
+			}
+			globalGameState.advanceState();
+		}
+	}
 	
 }
 
@@ -1363,7 +1439,9 @@ class GameHistory {
 			players[id] = [props, attr];
 		}
 		let console_length = globalGameScreenConsoleHist_UI.length;
-		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI, console_length]);
+		const dummyRolesCopy = [];
+		for (let d of globalDummyRoles) {dummyRolesCopy.push(d);}
+		this.hist.push([variables, currentStateID, players, globalGameScreenSelectedBtnID_UI, console_length, dummyRolesCopy]);
 	}
 	
 	/*
@@ -1374,7 +1452,7 @@ class GameHistory {
 			window.alert("Du bist bereits am Spielbeginn angekommen, weiter zurück geht nicht!");
 			return;
 		}
-		let [variables, currentStateID, players, gGSSBID_UI, console_length] = this.hist.pop();
+		let [variables, currentStateID, players, gGSSBID_UI, console_length, dummies] = this.hist.pop();
 		globalGameScreenSelectedBtnID_UI = gGSSBID_UI;
 		globalGameState.gameVariables = {"werewolves":0, "villagers":0};
 		for (let k in variables) {
@@ -1392,6 +1470,8 @@ class GameHistory {
 				p.addProperty(prop, true);
 			}
 		}
+		globalDummyRoles.splice(0, globalDummyRoles.length);
+		for (let d of dummies) {globalDummyRoles.push(d);}
 		globalGameScreenConsoleHist_UI.splice(console_length, globalGameScreenConsoleHist_UI.length-console_length);
 	}
 	
