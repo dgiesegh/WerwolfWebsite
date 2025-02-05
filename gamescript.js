@@ -737,8 +737,8 @@ class RoleManager {
 				worm = true;
 			}
 			if (id != -1) {
+				let p = globalGameState.getPlayerWithId(id);
 				if (!worm) {
-					let p = globalGameState.getPlayerWithId(id);
 					p.addProperty("gettingHanged");
 					if (p.hasProperty("extraLife")) {
 						updateGameScreenUI(p.name+" überlebt!", chooseLine("execution2", p.name), ["OK"], [-1]);
@@ -1372,7 +1372,6 @@ class RoleManager {
 	sickWolf(iteration) {
 		let sick_id = globalGameState.getPlayersWithRole("Räudiger Wolf")[0];
 		let firstWerewolfDead = globalGameState.gameVariables["firstWerewolfDead"] == true;
-		if (firstWerewolfDead) { delete globalGameState.gameVariables["firstWerewolfDead"]; }
 		if (globalGameState.gameVariables["gameStarting"] == true) {
 			delete globalGameState.gameVariables["gameStarting"];
 			sick_id = 0;
@@ -1399,11 +1398,12 @@ class RoleManager {
 			}
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
-			if (id != -1) {
+			if (id != -1 && firstWerewolfDead) {
 				let p = globalGameState.getPlayerWithId(id);
 				globalDummyRoles.push(p.mainRole);
 				p.updateNameAndRole("", "Werwolf", "");
 			}
+			if (firstWerewolfDead) { delete globalGameState.gameVariables["firstWerewolfDead"]; }
 			globalGameState.advanceState();
 		}
 	}
