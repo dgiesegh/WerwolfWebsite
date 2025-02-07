@@ -24,10 +24,10 @@ function updateMenuColumnUI() {
         htmlString += "<div class=\"player\" id=\"Player"+id+"\"";
 		if (player.hasProperty("dead")) {
             htmlString += " style=\"background-color: Tomato\"";
-        } else if (player.hasProperty("isWerewolf") && globalGameRunning) {
-            htmlString += " style=\"background-color: SteelBlue\"";
         } else if (player.hasProperty("inLove") && globalGameRunning) {
             htmlString += " style=\"background-color: LightPink\"";
+        } else if (player.hasProperty("isWerewolf") && globalGameRunning) {
+            htmlString += " style=\"background-color: SteelBlue\"";
         } else if (globalGameRunning) {
             htmlString += " style=\"background-color: LightGreen\"";
         }

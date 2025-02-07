@@ -46,7 +46,8 @@ class Player {
 			"bitchSleepsHere": "Dorfschlampe schläft hier",
 			"roleEaten": "Nebenrolle gefressen",
 			"eatUsedOnce": "Hat eine Nebenrolle gefressen",
-			"eatUsedTwice": "Hat zwei Nebenrollen gefressen"
+			"eatUsedTwice": "Hat zwei Nebenrollen gefressen",
+			"nobilityUsed": "Adeligenstatus genutzt"
 			};
     }
 
@@ -159,7 +160,11 @@ class Player {
 		//Hanging
 		if (this.hasProperty("gettingHanged")) {
 			this.removeProperty("gettingHanged");
-			this.addProperty("dead"); deathReason = "Hinrichtung";
+			if (this.sideRole == "Adeliger" && !this.hasProperty("nobilityUsed")) {
+				this.addProperty("nobilityUsed");
+			} else {
+				this.addProperty("dead"); deathReason = "Hinrichtung";
+			}
 		}
 		//Witch attack
 		if (this.hasProperty("attackedByPotion")) {
@@ -544,18 +549,18 @@ class GameState {
 	*/
 	checkVictory() {
 		if (this.gameVariables["werewolves"]==0 && this.gameVariables["villagers"]==0) {
-			updateGameScreenUI("Niemand gewinnt.", "", ["OK"], ["endGame"]);
+			updateGameScreenUI("Niemand gewinnt.", chooseLine("nowin"), ["Spiel beenden"], ["endGame"]);
 			return true;
 		} else if (this.players.filter(p => p.hasProperty("inLove") && !p.hasProperty("dead")).length == 2 && this.getPlayersWithProperty("dead", true).length == 2) {
-			updateGameScreenUI("Das Liebespaar gewinnt!", chooseLine("loverswin"), ["OK"], ["endGame"]);
+			updateGameScreenUI("Das Liebespaar gewinnt!", chooseLine("loverswin"), ["Spiel beenden"], ["endGame"]);
 			return true;
 		} else if (this.gameVariables["werewolves"]==0) {
 			if (!(this.getPlayersWithRole("Räudiger Wolf")[0] != 0 && this.gameVariables["firstWerewolfDead"] == true)) {
-				updateGameScreenUI("Die Dorfbewohner gewinnen!", chooseLine("villagewin"), ["OK"], ["endGame"]);
+				updateGameScreenUI("Die Dorfbewohner gewinnen!", chooseLine("villagewin"), ["Spiel beenden"], ["endGame"]);
 				return true;
 			}
 		} else if (this.gameVariables["villagers"]==0) {
-			updateGameScreenUI("Die Werwölfe gewinnen!", chooseLine("wwwin"), ["OK"], ["endGame"]);
+			updateGameScreenUI("Die Werwölfe gewinnen!", chooseLine("wwwin"), ["Spiel beenden"], ["endGame"]);
 			return true;
 		}
 		return false;
@@ -610,7 +615,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Adeliger, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -626,7 +631,7 @@ class GameState {
 	gameStart() {
 		if (this.gameVariables["gameStarting"] == true) {
 			let flavortext = chooseLine("sundown1");
-			updateGameScreenUI("Die Nacht bricht herein", flavortext, ["OK"], [-1]);
+			updateGameScreenUI("Die Nacht bricht herein", flavortext, ["Weiter"], [-1]);
 			// gameStarting deleted by sick wolf
 		} else {
 			this.advanceState();
@@ -653,7 +658,7 @@ class GameState {
 			if (killedIDsList.includes(lotte_id)) {
 				txt += "<br><br>"+chooseLine("lotte", this.getPlayerWithId(lotte_id).name);
 			}
-			updateGameScreenUI("Der Morgen graut", txt, ["OK"], [-1]);
+			updateGameScreenUI("Der Morgen graut", txt, ["Weiter"], [-1]);
 		}
 	}
 	
@@ -677,7 +682,7 @@ class GameState {
 			if (killedIDsList.includes(lotte_id)) {
 				txt += "<br><br>"+chooseLine("lotte", this.getPlayerWithId(lotte_id).name);
 			}
-			updateGameScreenUI("Die Nacht bricht herein", txt, ["OK"], [-1]);
+			updateGameScreenUI("Die Nacht bricht herein", txt, ["Weiter"], [-1]);
 		}
 	}
 
@@ -740,13 +745,15 @@ class RoleManager {
 				let p = globalGameState.getPlayerWithId(id);
 				if (!worm) {
 					p.addProperty("gettingHanged");
-					if (p.hasProperty("extraLife")) {
-						updateGameScreenUI(p.name+" überlebt!", chooseLine("execution2", p.name), ["OK"], [-1]);
+					if (p.sideRole == "Adeliger" && !p.hasProperty("nobilityUsed")) {
+						updateGameScreenUI(p.name+" is der Adelige!", chooseLine("execution4", p.name), ["Weiter"], [-1]);
+					} else if (p.hasProperty("extraLife")) {
+						updateGameScreenUI(p.name+" überlebt!", chooseLine("execution2", p.name), ["Weiter"], [-1]);
 					} else {
-						updateGameScreenUI(p.name+" wird gehängt", chooseLine("execution1", p.name), ["OK"], [-1]);
+						updateGameScreenUI(p.name+" wird gehängt", chooseLine("execution1", p.name), ["Weiter"], [-1]);
 					}
 				} else {
-					updateGameScreenUI("Der Galgen bricht!", chooseLine("execution3", p.name), ["OK"], [-1]);
+					updateGameScreenUI("Der Galgen bricht!", chooseLine("execution3", p.name), ["Weiter"], [-1]);
 				}
 			} else {
 				globalGameState.advanceState();
@@ -833,9 +840,9 @@ class RoleManager {
 			let flavortext = chooseLine("priest", priest.name)+"<br><br>";
 			logMessageUI("Der Priester ist an der Reihe");
 			if (priest == -1) {
-				updateGameScreenUI("Priester", flavortext+"Der Priester ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+				updateGameScreenUI("Priester", flavortext+"Der Priester ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 			} else if (priest.hasProperty("dead")) {
-				updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Der Priester ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Priester ("+priest.name+")", flavortext+"Der Priester ist leider schon tot.", ["Weiter"], [-1]);
 			} else {
 				const names = [];
 				const excl = [priest_id];
@@ -875,9 +882,9 @@ class RoleManager {
 			let flavortext = chooseLine("witch1", witch.name)+"<br><br>";
 			logMessageUI("Die Hexe ist an der Reihe");
 			if (witch == -1) {
-				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 			} else if (witch.hasProperty("dead")) {
-				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["Weiter"], [-1]);
 			} else if (!witch.hasProperty("healUsed")) {
 				const victim_ids = globalGameState.getPlayersWithProperty("attackedByWerewolf");
 				let victim_id = 0;
@@ -889,18 +896,18 @@ class RoleManager {
 				}
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Möchte sie das Opfer ("+globalGameState.getPlayerWithId(victim_id).name+") retten?", ["Ja", "Nein"], [victim_id, -1]);
 			} else {
-				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann das Opfer leider nicht retten.", ["Ok"], [-1]);
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann das Opfer leider nicht retten.", ["Weiter"], [-1]);
 			}
 		} else if (iteration == 2) {
 			let flavortext = chooseLine("witch2", witch.name)+"<br><br>";
 			if (witch == -1) {
-				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+				updateGameScreenUI("Hexe", flavortext+"Die Hexe ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 			} else if (witch.hasProperty("dead")) {
-				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Die Hexe ist leider schon tot.", ["Weiter"], [-1]);
 			} else if (globalGameScreenSelectedBtnID_UI != -1) {
 				globalGameState.getPlayerWithId(globalGameScreenSelectedBtnID_UI).addProperty("healedByPotion");
 				witch.addProperty("healUsed");
-				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann diese Runde leider niemanden töten.", ["Ok"], [-1]);
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann diese Runde leider niemanden töten.", ["Weiter"], [-1]);
 			} else if (!witch.hasProperty("killUsed")) {
 				const ids = globalGameState.getPlayersWithProperty("dead", true);
 				const names = [];
@@ -911,7 +918,7 @@ class RoleManager {
 				ids.push(-1);
 				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Möchte sie noch jemanden töten?", names, ids);
 			} else {
-				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann leider niemanden mehr töten.", ["Ok"], [-1]);
+				updateGameScreenUI("Hexe ("+witch.name+")", flavortext+"Sie kann leider niemanden mehr töten.", ["Weiter"], [-1]);
 			}
 		} else if (iteration == 3) {
 			if (witch != -1 && !witch.hasProperty("dead")) {
@@ -937,9 +944,9 @@ class RoleManager {
 		let necro = globalGameState.getPlayerWithId(necro_id);
 		let flavortext = chooseLine("necro", necro.name)+"<br><br>";
 		if (necro == -1) {
-			updateGameScreenUI("Nekromant", flavortext+"Der Nekromant ist nicht (mehr) im Spiel.", ["Ok"], [-1]);
+			updateGameScreenUI("Nekromant", flavortext+"Der Nekromant ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 		} else if (necro.hasProperty("dead")) {
-			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Der Nekromant ist leider schon tot.", ["Ok"], [-1]);
+			updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Der Nekromant ist leider schon tot.", ["Weiter"], [-1]);
 		} else {
 			const dead = globalGameState.getPlayersWithProperty("dead");
 			console.log(dead);
@@ -949,9 +956,9 @@ class RoleManager {
 					let p = globalGameState.getPlayerWithId(dead_id);
 					name_str += p.name + ": " + p.mainRole + "<br><br>";
 				}
-				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+name_str, ["Ok"], [-1]);
+				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+name_str, ["Weiter"], [-1]);
 			} else {
-				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Es ist leider noch niemand gestorben.", ["Ok"], [-1]);
+				updateGameScreenUI("Nekromant ("+necro.name+")", flavortext+"Es ist leider noch niemand gestorben.", ["Weiter"], [-1]);
 			}
 		}
 	}
@@ -970,9 +977,9 @@ class RoleManager {
 			let flavortext = chooseLine("bitch", bitch.name)+"<br><br>";
 			logMessageUI("Die Dorfschlampe ist an der Reihe");
 			if (bitch == -1) {
-				updateGameScreenUI("Dorfschlampe", flavortext+"Die Dorfschlampe ist nicht (mehr) im Spiel.", ["Ok"], [-1]);
+				updateGameScreenUI("Dorfschlampe", flavortext+"Die Dorfschlampe ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 			} else if (bitch.hasProperty("dead")) {
-				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Die Dorfschlampe ist leider schon tot.", ["Ok"], [-1]);
+				updateGameScreenUI("Dorfschlampe ("+bitch.name+")", flavortext+"Die Dorfschlampe ist leider schon tot.", ["Weiter"], [-1]);
 			} else {
 				const excl = [];
 				if (globalGameState.gameVariables["bitchSleepsAt"] != undefined && globalGameState.gameVariables["bitchSleepsAt"] != bitch_id) {
@@ -1138,11 +1145,11 @@ class RoleManager {
 				htmlString += stinky[name] ? "unmenschlich" : "menschlich";
 				htmlString += "<br>"
 			}
-			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+htmlString, ["OK"], [-1]);
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+htmlString, ["Weiter"], [-1]);
 		} else if (dog.hasProperty("roleEaten")) {
-			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+"Michis Besitzer hat seinen Hund verloren!", ["OK"], [-1]);
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+"Michis Besitzer hat seinen Hund verloren!", ["Weiter"], [-1]);
 		} else {
-			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+"Michi schnüffelt nicht mehr, da sein Besitzer leider schon tot ist.", ["OK"], [-1]);
+			updateGameScreenUI("Michis Besitzer ("+dog.name+")", flavortext+"Michi schnüffelt nicht mehr, da sein Besitzer leider schon tot ist.", ["Weiter"], [-1]);
 		}
 	}
 
@@ -1163,12 +1170,12 @@ class RoleManager {
 				if (!worm.hasProperty("wormUsed")) {
 					updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Möchte er den Holzwurm heute freilassen?", ["Ja", "Nein"], [1, -1]);
 				} else {
-					updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Holzwurm wurde bereits befreit.", ["OK"], [-1]);
+					updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Holzwurm wurde bereits befreit.", ["Weiter"], [-1]);
 				}
 			} else if (!worm.hasProperty("dead") && worm.hasProperty("roleEaten")) {
-				updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Holzwurm wurde gefressen!", ["OK"], [-1]);
+				updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Holzwurm wurde gefressen!", ["Weiter"], [-1]);
 			} else {
-				updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Spieler mit dem Holzwurm ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Holzwurm ("+worm.name+")", flavortext+"Der Spieler mit dem Holzwurm ist leider schon tot.", ["Weiter"], [-1]);
 			}
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
@@ -1204,12 +1211,12 @@ class RoleManager {
 					stealRoles.push(-1);
 					updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Welche Nebenrolle möchte er stehlen?", names, stealRoles);
 				} else {
-					updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Leider gibt es noch keine Nebenrollen, die er stehlen kann.", ["OK"], [-1]);
+					updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Leider gibt es noch keine Nebenrollen, die er stehlen kann.", ["Weiter"], [-1]);
 				}
 			}  else if (rob.hasProperty("roleEaten")) {
-				updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Der Leichenfledderer hat seine Werkzuge verloren!", ["OK"], [-1]);
+				updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Der Leichenfledderer hat seine Werkzuge verloren!", ["Weiter"], [-1]);
 			} else {
-				updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Der Leichenfledderer ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Leichenfledderer ("+rob.name+")", flavortext+"Der Leichenfledderer ist leider schon tot.", ["Weiter"], [-1]);
 			}
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
@@ -1234,7 +1241,7 @@ class RoleManager {
 		let clerk = globalGameState.getPlayerWithId(clerk_id);
 		let flavortext = chooseLine("clerk", clerk.name)+"<br><br>";
 		if (clerk == -1) {
-			updateGameScreenUI("Beamter", flavortext+"Der Beamte ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+			updateGameScreenUI("Beamter", flavortext+"Der Beamte ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 		} else if (!clerk.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [clerk_id]);
 			let htmlString = "Er darf nun die Nebenrolle eines lebenden Spielers erfahren. <br><br>";
@@ -1242,9 +1249,9 @@ class RoleManager {
 				let p = globalGameState.getPlayerWithId(id);
 				htmlString += p.name + ": " + p.sideRole + "<br>";
 			}
-			updateGameScreenUI("Beamter ("+clerk.name+")", flavortext+htmlString, ["OK"], [-1]);
+			updateGameScreenUI("Beamter ("+clerk.name+")", flavortext+htmlString, ["Weiter"], [-1]);
 		} else {
-			updateGameScreenUI("Beamter ("+clerk.name+")", flavortext+"Der Beamte ist leider schon tot.", ["OK"], [-1]);
+			updateGameScreenUI("Beamter ("+clerk.name+")", flavortext+"Der Beamte ist leider schon tot.", ["Weiter"], [-1]);
 		}
 	}
 
@@ -1260,7 +1267,7 @@ class RoleManager {
 		let oracle = globalGameState.getPlayerWithId(oracle_id);
 		let flavortext = chooseLine("seer", oracle.name)+"<br><br>";
 		if (oracle == -1) {
-			updateGameScreenUI("Seher", flavortext+"Der Seher ist nicht (mehr) im Spiel.", ["OK"], [-1]);
+			updateGameScreenUI("Seher", flavortext+"Der Seher ist nicht (mehr) im Spiel.", ["Weiter"], [-1]);
 		} else if (!oracle.hasProperty("dead")) {
 			const alive = globalGameState.getPlayersWithProperty("dead", true, [oracle_id]);
 			const werewolves = alive.filter(id => globalGameState.getPlayerWithId(id).hasProperty("isWerewolf"));
@@ -1275,9 +1282,9 @@ class RoleManager {
 				txt += globalGameState.getPlayerWithId(id).name + ", ";
 			}
 			txt = txt.slice(0, -2);
-			updateGameScreenUI("Seher ("+oracle.name+")", flavortext+txt, ["OK"], [-1]);
+			updateGameScreenUI("Seher ("+oracle.name+")", flavortext+txt, ["Weiter"], [-1]);
 		} else {
-			updateGameScreenUI("Seher ("+oracle.name+")", flavortext+"Der Seher ist leider schon tot.", ["OK"], [-1]);
+			updateGameScreenUI("Seher ("+oracle.name+")", flavortext+"Der Seher ist leider schon tot.", ["Weiter"], [-1]);
 		}
 	}
 
@@ -1306,12 +1313,12 @@ class RoleManager {
 				for (let id of killedPlayers) {
 					htmlString += globalGameState.getPlayerWithId(id).name + ": " + globalGameState.getPlayerWithId(id).mainRole + "<br>";
 				}
-				updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+htmlString, ["OK"], [-1]);
+				updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+htmlString, ["Weiter"], [-1]);
 			} else {
-				updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+"Der Schattenwolf erfährt keine Rolle, da niemand von den Wölfen getötet wurde.", ["OK"], [-1]);
+				updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+"Der Schattenwolf erfährt keine Rolle, da niemand von den Wölfen getötet wurde.", ["Weiter"], [-1]);
 			}
 		} else {
-			updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+"Der Schattenwolf ist leider schon tot.", ["OK"], [-1]);
+			updateGameScreenUI("Schattenwolf ("+shadow.name+")", flavortext+"Der Schattenwolf ist leider schon tot.", ["Weiter"], [-1]);
 		}
 	}
 
@@ -1334,7 +1341,7 @@ class RoleManager {
 				let txt = "";
 				if (playersWithSideRole.length == 0) {
 					playersWithSideRole[0] = -1;
-					btns.push("OK");
+					btns.push("Weiter");
 					txt = "Es gibt keine Nebenrollen zu stehlen."
 				} else {
 					for (let id of playersWithSideRole) {
@@ -1346,9 +1353,9 @@ class RoleManager {
 				}
 				updateGameScreenUI("Schwein ("+pig.name+")", flavortext+txt, btns, playersWithSideRole);
 			} else if (pig.hasProperty("eatUsedTwice")) {
-				updateGameScreenUI("Schwein ("+pig.name+")", flavortext+"Das Schwein ist schon satt!", ["OK"], [-1]);
+				updateGameScreenUI("Schwein ("+pig.name+")", flavortext+"Das Schwein ist schon satt!", ["Weiter"], [-1]);
 			} else {
-				updateGameScreenUI("Schwein ("+pig.name+")", flavortext+"Das Schwein ist leider schon tot.", ["OK"], [-1]);
+				updateGameScreenUI("Schwein ("+pig.name+")", flavortext+"Das Schwein ist leider schon tot.", ["Weiter"], [-1]);
 			}
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
@@ -1394,7 +1401,7 @@ class RoleManager {
 				updateGameScreenUI("Räudiger Wolf ("+sick.name+")", flavortext+txt, btns, ids);
 			} else {
 				let txt = "Der räudige Wolf kann diese Nacht nichts tun.";
-				updateGameScreenUI("Räudiger Wolf ("+sick.name+")", flavortext+txt, ["OK"], [-1]);
+				updateGameScreenUI("Räudiger Wolf ("+sick.name+")", flavortext+txt, ["Weiter"], [-1]);
 			}
 		} else if (iteration == 2) {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
