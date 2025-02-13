@@ -16,7 +16,7 @@ function shuffleArray(array) {
 Randomly selects a setting from globalFlavorLines.
 */
 function chooseRandomSetting() {
-    globalCurrentSetting = globalFlavorLines[Math.floor(Math.random() * (globalFlavorLines.length-1))];
+    globalCurrentSetting = globalFlavorLines[Math.floor(Math.random() * globalFlavorLines.length)];
 }
 
 /*

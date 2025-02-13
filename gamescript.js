@@ -793,10 +793,13 @@ class RoleManager {
 			}
 			let flavortext = chooseLine("werewolves")+"<br>";
 			const littleGirlID = globalGameState.getPlayersWithRole("Kleines Mädchen")[0];
-			if (littleGirlID != 0) {
-				flavortext += chooseLine("girl", globalGameState.getPlayerWithId(littleGirlID).name)+"<br>";
-			}
+			//if (littleGirlID != 0) {
+			//	flavortext += chooseLine("girl", globalGameState.getPlayerWithId(littleGirlID).name)+"<br>";
+			//}
 			flavortext += "<br>";
+			if (littleGirlID != 0) {
+				flavortext += "Das kleine Mädchen darf luren.<br>";
+			}
 			if (alphaKill) {
 				flavortext += "Der Alphawolf hat einen unabwehrbaren Angriff. Wen möchte er töten?"
 			} else if (iteration == 3) {
@@ -804,7 +807,7 @@ class RoleManager {
 				names.push("Niemanden");
 				ids.push(-1);
 			} else {
-				flavortext += "Wen wollen sie töten?";
+				flavortext += "Wen wollen die Werwölfe töten?";
 			}
 			updateGameScreenUI("<b>Werwölfe</b> ("+werewolves.slice(0,-2)+")", flavortext, names, ids);
 		} else if (iteration == 2 || iteration == 4) {
