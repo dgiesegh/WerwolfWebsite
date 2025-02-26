@@ -55,8 +55,8 @@ Nebenrollen:
 + Hasstrank:        Kann in der ersten Nacht zwei Spieler auswählen, die sich hassen.
                     Leben beide Spieler zum Ende der dritten Diskussion (vor der vierten Nacht) noch, sterben beide.
                     Endet das Spiel vorher und sind beide noch am Leben, sterben beide ebenfalls (und gewinnen damit nicht mit der Seite, zu der sie gehören).
-+ Adeliger:         Wenn er hingerichtet werden soll, enthüllt er seinen Status als Adeliger und kann sich damit einmal vor der Hinrichtung schützen.
+- Adeliger:         Wenn er hingerichtet werden soll, enthüllt er seinen Status als Adeliger und kann sich damit einmal vor der Hinrichtung schützen.
 + Ludwig:           Ludwig ist ein furchteinflößender Kater, der einmal nachts den ersten Angreifer des Spielers abwehrt (z.B. Werwölfe, Hexe).
-+ Schweigetrank:    Kann zweimal seinen Trank nutzen, um einen Spieler verstummen zu lassen. dieser darf in der kommenden Diskussion nicht sprechen.
+- Schweigetrank:    Kann zweimal seinen Trank nutzen, um einen Spieler verstummen zu lassen. Dieser darf in der kommenden Diskussion nicht sprechen.
 + Starker Magen:    Tränke haben keinen Effekt auf diesen Spieler (Heil- und Todestrank, Schweigetrank, Liebes- und Hasstrank).
                     Hass und Liebe sind dann einseitig (d.h. z.B. stirbt dieser Spieler nicht, wenn sein Liebespartner stirbt, aber andersherum).

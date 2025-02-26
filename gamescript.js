@@ -47,7 +47,9 @@ class Player {
 			"roleEaten": "Nebenrolle gefressen",
 			"eatUsedOnce": "Hat eine Nebenrolle gefressen",
 			"eatUsedTwice": "Hat zwei Nebenrollen gefressen",
-			"nobilityUsed": "Adeligenstatus genutzt"
+			"nobilityUsed": "Adeligenstatus genutzt",
+			"silenceUsedOnce": "Schweigetrank halb verbraucht",
+			"silenceUsedTwice": "Schweigetrank verbraucht"
 			};
     }
 
@@ -250,11 +252,12 @@ class GameState {
 			"crossbow": "Armbrust aktiv",
 			"stoneAndAmulet": "Stein oder Amulett gestorben",
 			"wormSet": "Holzwurm wurde freigesetzt",
-			"gameStarting": "Spiel beginnt" };
+			"gameStarting": "Spiel beginnt",
+			"silenced": "Verstummter Spieler" };
 		this.currentState = "beforeGame";
 		this.currentStateID = -1;
 		this.states = ["gamestart", "lovepotion1", "lovepotion2", "lovepotion3", "sickwolf1", "sickwolf2", "necro",
-			"priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "robber1", "robber2", 
+			"priest1", "priest2", "bitch1", "bitch2", "dog", "clerk", "oracle", "worm1", "worm2", "silencepot1", "silencepot2", "robber1", "robber2", 
 			"werewolves1", "werewolves2", "werewolves3", "werewolves4", 
 			"witch1", "witch2", "witch3", "bitch3", "shadowwolf", "crossbow1", "crossbow2", "nightCleanup", "stoneAndAmulet", 
 			"day1", "day2", "crossbow1", "crossbow2", "dayCleanup", "stoneAndAmulet", 
@@ -501,6 +504,10 @@ class GameState {
 			  globalRoleManager.worm(1); break;
 			case "worm2":
 			  globalRoleManager.worm(2); break;
+			case "silencepot1":
+			  globalRoleManager.silencepot(1); break;
+			case "silencepot2":
+			  globalRoleManager.silencepot(2); break;
 			case "robber1":
 			  globalRoleManager.robber(1); break;
 			case "robber2":
@@ -615,7 +622,7 @@ class GameState {
 		this.currentStateID = -1;
 		globalGameHistory.clear();
 		updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
-			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Schweigetrank, Starker Magen, Ludwig, Pestkranker, Hasstrank", 
+			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Starker Magen, Ludwig, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
 		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
@@ -732,6 +739,10 @@ class RoleManager {
 				if (!fips.hasProperty("dead")) {
 					txt += "<br>Fips ("+fips.name+") muss \"Werwolf\" sagen.";
 				}
+			}
+			if (globalGameState.gameVariables["silenced"] != undefined) {
+				let silenced = globalGameState.getPlayerWithId(globalGameState.gameVariables["silenced"]);
+				txt += "<br>"+silenced.name+" darf nicht sprechen.";
 			}
 			updateGameScreenUI("Diskussion", txt+"<br>Wer wird gehängt?", names, ids);
 		} else if (iteration == 2) {
@@ -1414,6 +1425,49 @@ class RoleManager {
 				p.updateNameAndRole("", "Werwolf", "");
 			}
 			if (firstWerewolfDead) { delete globalGameState.gameVariables["firstWerewolfDead"]; }
+			globalGameState.advanceState();
+		}
+	}
+
+	/*
+	Schweigetrank
+	*/
+	silencepot(iteration) {
+		let pot_id = globalGameState.getPlayersWithRole("Schweigetrank")[0];
+		if (pot_id == 0) {
+			globalGameState.advanceState();
+			return;
+		}
+		let pot = globalGameState.getPlayerWithId(pot_id);
+		if (iteration == 1) {
+			let flavortext = chooseLine("silence", pot.name)+"<br><br>";
+			if (pot.hasProperty("dead")) {
+				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Spieler mit dem Schweigetrank ist leider schon tot.", ["Weiter"], [-1]);
+			} else if (pot.hasProperty("roleEaten")) {
+				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Schweigetrank wurde gefressen!", ["Weiter"], [-1]);
+			} else if (pot.hasProperty("silenceUsedTwice")) {
+				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Schweigetrank wurde bereits zweimal eingesetzt.", ["Weiter"], [-1]);
+			} else {
+				const alive = globalGameState.getPlayersWithProperty("dead", true);
+				const names = [];
+				for (let id of alive) {
+					names.push(globalGameState.getPlayerWithId(id).name);
+				}
+				alive.push(-1);
+				names.push("Niemand");
+				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Wer muss morgen verstummen?", names, alive);
+			}
+		} else if (iteration==2) {
+			let id = Number(globalGameScreenSelectedBtnID_UI);
+			if (id != -1) {
+				globalGameState.gameVariables["silenced"] = id;
+				if (pot.hasProperty("silenceUsedOnce")) {
+					pot.removeProperty("silenceUsedOnce");
+					pot.addProperty("silenceUsedTwice");
+				} else {
+					pot.addProperty("silenceUsedOnce");
+				}
+			}
 			globalGameState.advanceState();
 		}
 	}
