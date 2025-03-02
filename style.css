@@ -201,7 +201,6 @@
 	 padding-top: 15px;
 	 margin: auto;
 	 text-align: center;
-	 visibility: hidden;
  }
  
  .gamescreen .backandabort a:link, .gamescreen .backandabort a:visited {
@@ -225,6 +224,14 @@
  
  .gamescreen .backandabort a:active {
 	 background-color: white;
+ }
+
+ #return {
+    display: none;
+ }
+
+ #abortGame {
+    display: none;
  }
  
  .gamescreen .gameheading {

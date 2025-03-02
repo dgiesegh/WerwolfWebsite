@@ -39,8 +39,9 @@
         </div>
         <div class="gamescreen">
 			<div class="backandabort">
-				<a href="#" onclick="returnUI()">Zurück</a>
-				<a href="#" onclick="abortUI()">Abbrechen</a>
+				<a href="#" onclick="returnUI()" id="return">Zurück</a>
+				<a href="#" onclick="selectGameOptionUI(this)" id="abortGame">Abbrechen</a>
+                <a href="#" onclick="toggleSettingsUI()" id="openSettings">Einstellungen</a>
 			</div>
             <div class="gameheading">
                 Willkommen auf der Werwolf-Companion Website

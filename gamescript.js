@@ -440,14 +440,16 @@ class GameState {
 	Starts the game.
 	*/
 	startGame() {
-		if (!this.checkGameStartConditions()) {return;}
+		if (!this.checkGameStartConditions()) {
+			return false;
+		}
 		logMessageUI("Spiel beginnt");
-		document.getElementsByClassName("backandabort")[0].style.visibility = "visible";
 		globalGameRunning = true;
 		this.gameVariables["gameStarting"] = true;
 		chooseRandomSetting();
 		updateMenuColumnUI();
 		this.advanceState();
+		return true;
 	}
 	
 	/*
@@ -625,7 +627,6 @@ class GameState {
 			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Starker Magen, Ludwig, Pestkranker, Hasstrank", 
 			["Spiel beginnen"], ["startGame"]);
 		updateMenuColumnUI();
-		document.getElementsByClassName("backandabort")[0].style.visibility = "hidden";
 		logMessageUI("Spiel endet");
 	}
 	

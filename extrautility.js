@@ -16,7 +16,11 @@ function shuffleArray(array) {
 Randomly selects a setting from globalFlavorLines.
 */
 function chooseRandomSetting() {
-    globalCurrentSetting = globalFlavorLines[Math.floor(Math.random() * globalFlavorLines.length)];
+    if (globalSettingsSelectedVillage_UI == "random") {
+        globalCurrentSetting = globalFlavorLines[Math.floor(Math.random() * globalFlavorLines.length)];
+    } else {
+        globalCurrentSetting = globalFlavorLines[Number(globalSettingsSelectedVillage_UI)];
+    }
 }
 
 /*

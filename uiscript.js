@@ -7,6 +7,12 @@ Function names all end in UI.
 let globalPlayerDetailsStyle_UI = "none";
 let globalRoleMenuSelectedPlayerID_UI = 0;
 let globalGameScreenSelectedBtnID_UI = "";
+
+let globalSettingsDisplayed_UI = false;
+let globalSettingsShortTexts_UI = false;
+let globalSettingsDeadSideRoles_UI = true;
+let globalSettingsSelectedVillage_UI = "random";
+
 const globalGameScreenConsoleHist_UI = [];
 const globalDefaultNames = ["Hans", "Ursula", "Jakob", "Heinrich", "Lotte", "Horst", "Brigitte", "Walter", "Rosemarie", "Christian", "Ilse", "Helga", "Brunhilde", "Peter", "Franz", "Xaver", "Liesel", "Gert", "Erwin", "Ottilie", "Karl", "Agnes", "Marianne", "Barbara", "Valentin", "Anton", "Josef", "Marlies", "Renate", "Werner", "Gerhard", "Ingrid", "Irmgard", "Lutz", "Hubert", "Margarethe"];
 shuffleArray(globalDefaultNames);
@@ -217,19 +223,91 @@ function updateGameScreenUI(heading, message, buttonNames, buttonIDs) {
 }
 
 /*
+Changes UI when game starts.
+*/
+function prepareGameStartUI() {
+    document.getElementById("addplayer").style.display = "none";
+    document.getElementById("clearplayers").style.display = "none";
+    document.getElementsByClassName("menubuttons")[0].style.height = "35px";
+    document.getElementsByClassName("playerlist")[0].style.height = "calc(100% - 195px)";
+    document.getElementById("return").style.display = "inline-block";
+    document.getElementById("abortGame").style.display = "inline-block";
+    document.getElementById("openSettings").style.display = "none";
+}
+
+/*
+Changes UI when game ends.
+*/
+function prepareGameEndUI() {
+    document.getElementById("addplayer").style.display = "inline";
+    document.getElementById("clearplayers").style.display = "inline";
+    document.getElementsByClassName("menubuttons")[0].style.height = "105px";
+    document.getElementsByClassName("playerlist")[0].style.height = "calc(100% - 265px)";
+    document.getElementById("return").style.display = "none";
+    document.getElementById("abortGame").style.display = "none";
+    document.getElementById("openSettings").style.display = "inline-block";
+}
+
+/*
 Triggers when a button in the game window is pressed. Handles game start, end and option selections during the game.
 */
 function selectGameOptionUI(btn) {
 	if (btn.id == "startGame") {
-		globalGameState.startGame();
+        prepareGameStartUI();
+		if (!globalGameState.startGame()) {
+            prepareGameEndUI();
+        }
 		return;
-	} else if (btn.id == "endGame") {
+	} else if (btn.id == "endGame" || btn.id == "abortGame") {
+        prepareGameEndUI();
 		globalGameState.endGame();
 		return;
 	}
 	globalGameScreenSelectedBtnID_UI = btn.id;
     logMessageUI(btn.innerHTML+" wurde per Button ausgewählt");
 	globalGameState.advanceState(true);
+}
+
+/*
+Triggers when settings button is clicked.
+*/
+function toggleSettingsUI() {
+    if (!globalSettingsDisplayed_UI) {
+        document.getElementsByClassName("gameheading")[0].innerHTML = "Einstellungen";
+        document.getElementById("openSettings").innerHTML = "Speichern";
+        let settings = "";
+        settings += "Kurztexte anzeigen: <input type=\"checkbox\" id=\"shorttexts\" onchange=\"saveSettingsUI()\" ";
+        settings += globalSettingsShortTexts_UI ? "checked" : "";
+        settings += "> <br>";
+        settings += "Tote Nebenrollen aufrufen: <input type=\"checkbox\" id=\"deadsideroles\" onchange=\"saveSettingsUI()\" ";
+        settings += globalSettingsDeadSideRoles_UI ? "checked" : "";
+        settings += "> <br>";
+        settings += "Dorf auswählen: <select id=\"village\" onchange=\"saveSettingsUI()\"><option value=\"random\" ";
+        settings += globalSettingsSelectedVillage_UI=="random" ? "selected" : "";
+        settings += ">Zufällig</option><option value=\"0\" ";
+        settings += globalSettingsSelectedVillage_UI=="0" ? "selected" : "";
+        settings += ">Weizenfeld</option><option value=\"1\" ";
+        settings += globalSettingsSelectedVillage_UI=="1" ? "selected" : "";
+        settings += ">Moor</option></select>";
+        document.getElementsByClassName("gamedesc")[0].innerHTML = settings;
+        document.getElementsByClassName("gamebuttons")[0].innerHTML = "";
+        globalSettingsDisplayed_UI = true;
+    } else {
+        document.getElementById("openSettings").innerHTML = "Einstellungen";
+        updateGameScreenUI("Willkommen auf der Werwolf-Companion Website", 
+			"Noch nicht implementierte Hauptrollen: Obdachloser, Doppelgänger <br> Noch nicht implementierte Nebenrollen: Starker Magen, Ludwig, Pestkranker, Hasstrank", 
+			["Spiel beginnen"], ["startGame"]);
+        globalSettingsDisplayed_UI = false;
+    }
+}
+
+/*
+Saves settings.
+*/
+function saveSettingsUI() {
+    globalSettingsShortTexts_UI = document.getElementById("shorttexts").checked;
+    globalSettingsDeadSideRoles_UI = document.getElementById("deadsideroles").checked;
+    globalSettingsSelectedVillage_UI = document.getElementById("village").value;
 }
 
 /*
@@ -249,13 +327,6 @@ function returnUI() {
 	} else {
 		window.alert("Du bist bereits am Spielanfang angekommen, weiter zurück geht nicht.");
 	}
-}
-
-/*
-Triggers on clicking the Abbrechen button. Ends the game.
-*/
-function abortUI() {
-	globalGameState.endGame();
 }
 
 /*
