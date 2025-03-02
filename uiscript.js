@@ -120,7 +120,7 @@ function togglePlayersInfoUI(btn) {
 Displays the main role menu and sets selected player in globals.
 */
 function showMainRoleMenuUI(htmlLink) {
-    globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.at(-1));
+    globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.slice(6));
     document.getElementsByClassName("gamescreen")[0].style.display = "none";
     document.getElementsByClassName("mainrolemenu")[0].style.display = "block";
     document.getElementsByClassName("siderolemenu")[0].style.display = "none";
@@ -130,7 +130,7 @@ function showMainRoleMenuUI(htmlLink) {
 Displays the side role menu and sets selected player in globals.
 */
 function showSideRoleMenuUI(htmlLink) {
-    globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.at(-1));
+    globalRoleMenuSelectedPlayerID_UI = Number(htmlLink.parentElement.id.slice(6));
     document.getElementsByClassName("gamescreen")[0].style.display = "none";
     document.getElementsByClassName("siderolemenu")[0].style.display = "block";
     document.getElementsByClassName("mainrolemenu")[0].style.display = "none";
@@ -160,7 +160,7 @@ function selectRoleUI(role, isMainRole) {
 Triggers on any changes made to the player name input fields. Changes player name.
 */
 function updateNameUI(htmlTextField) {
-    let id = Number(htmlTextField.parentElement.id.at(-1));
+    let id = Number(htmlTextField.parentElement.id.slice(6));
     let newName = htmlTextField.value;
     globalGameState.updatePlayerNameAndRole(id, newName, "", "");
 }
@@ -169,7 +169,7 @@ function updateNameUI(htmlTextField) {
 Removes a single player.
 */
 function removePlayerUI(player) {
-    let id = Number(player.parentElement.id.at(-1));
+    let id = Number(player.parentElement.id.slice(6));
     globalGameState.removePlayer(id);
     updateMenuColumnUI();
     document.getElementsByClassName("gamescreen")[0].style.display = "block";
@@ -181,7 +181,7 @@ function removePlayerUI(player) {
 Kills/revives a player while the game runs.
 */
 function killPlayerUI(player) {
-    let id = Number(player.parentElement.id.at(-1));
+    let id = Number(player.parentElement.id.slice(6));
     let p = globalGameState.getPlayerWithId(id);
     if (!p.hasProperty("dead")) {
         if (!p.hasProperty("killedByMod")) {
