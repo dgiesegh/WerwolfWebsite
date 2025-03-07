@@ -48,8 +48,7 @@ class Player {
 			"eatUsedOnce": "Hat eine Nebenrolle gefressen",
 			"eatUsedTwice": "Hat zwei Nebenrollen gefressen",
 			"nobilityUsed": "Adeligenstatus genutzt",
-			"silenceUsedOnce": "Schweigetrank halb verbraucht",
-			"silenceUsedTwice": "Schweigetrank verbraucht"
+			"silenceUsed": "Schweigetrank verbraucht"
 			};
     }
 
@@ -650,6 +649,7 @@ class GameState {
 	What happens at the end of the night. Updates player properties, displays killed players, checks victory.
 	*/
 	nightEnd() {
+		delete this.gameVariables["gameStarting"];
 		const killedIDsList = this.updatePlayerProperties();
 		let killedNames = "";
 		for (let id of killedIDsList) {
@@ -729,21 +729,21 @@ class RoleManager {
 			let txt = chooseLine("discussion")+"<br>";
 			let poet_id = globalGameState.getPlayersWithRole("Dichter")[0];
 			let fips_id = globalGameState.getPlayersWithRole("Fips")[0];
-			if (poet_id != 0) {
+			if (poet_id != 0 && poet_id != globalGameState.gameVariables["silenced"]) {
 				let poet = globalGameState.getPlayerWithId(poet_id);
 				if (!poet.hasProperty("dead") && !poet.hasProperty("roleEaten")) {
-					txt += "<br>Der Dichter ("+poet.name+") muss dichten.";
+					txt += "<br>Wenn der Dichter ("+poet.name+") gut reimt, bekommt er eine zweite Stimme!";
 				}
 			}
-			if (fips_id != 0) {
+			if (fips_id != 0 && fips_id != globalGameState.gameVariables["silenced"]) {
 				let fips = globalGameState.getPlayerWithId(fips_id);
 				if (!fips.hasProperty("dead")) {
-					txt += "<br>Fips ("+fips.name+") muss \"Werwolf\" sagen.";
+					txt += "<br><b>Fips ("+fips.name+") muss \"Werwolf\" sagen!</b>";
 				}
 			}
 			if (globalGameState.gameVariables["silenced"] != undefined) {
 				let silenced = globalGameState.getPlayerWithId(globalGameState.gameVariables["silenced"]);
-				txt += "<br>"+silenced.name+" darf nicht sprechen.";
+				txt += "<br>"+silenced.name+" darf nicht sprechen und nicht abstimmen.";
 			}
 			updateGameScreenUI("Diskussion", txt+"<br>Wer wird gehängt?", names, ids);
 		} else if (iteration == 2) {
@@ -951,6 +951,9 @@ class RoleManager {
 	*/
 	necro() {
 		let necro_id = globalGameState.getPlayersWithRole("Nekromant")[0];
+		if (globalGameState.gameVariables["gameStarting"] == true) {
+			necro_id = 0;
+		}
 		if (necro_id == 0) {
 			globalGameState.advanceState();
 			return;
@@ -982,8 +985,8 @@ class RoleManager {
 	Dorfschlampe
 	*/
 	bitch(iteration) {
-		let bitch_id = -1;
-		if (!(bitch_id = globalGameState.getPlayersWithRole("Dorfschlampe")[0])) {
+		let bitch_id = globalGameState.getPlayersWithRole("Dorfschlampe")[0];
+		if (bitch_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1036,8 +1039,8 @@ class RoleManager {
 	Liebestrank
 	*/
 	lovepotion(iteration) {
-		let pot_id = -1;
-		if (!(pot_id = globalGameState.getPlayersWithRole("Liebestrank")[0])) {
+		let pot_id = globalGameState.getPlayersWithRole("Liebestrank")[0];
+		if (pot_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1076,8 +1079,8 @@ class RoleManager {
 	Armbrust
 	*/
 	crossbow(iteration) {
-		let cb_id = 0;
-		if (!(cb_id = globalGameState.getPlayersWithRole("Armbrust")[0])) {
+		let cb_id = globalGameState.getPlayersWithRole("Armbrust")[0];
+		if (cb_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1142,7 +1145,7 @@ class RoleManager {
 	*/
 	dog() {
 		let dog_id = globalGameState.getPlayersWithRole("Michi")[0];
-		if (!dog_id) {
+		if (dog_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1173,7 +1176,7 @@ class RoleManager {
 	*/
 	worm(iteration) {
 		let worm_id = globalGameState.getPlayersWithRole("Holzwurm")[0];
-		if (!worm_id) {
+		if (worm_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1207,7 +1210,10 @@ class RoleManager {
 	*/
 	robber(iteration) {
 		let rob_id = globalGameState.getPlayersWithRole("Leichenfledderer")[0];
-		if (!rob_id) {
+		if (globalGameState.gameVariables["gameStarting"] == true) {
+			rob_id = 0;
+		}
+		if (rob_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1316,7 +1322,7 @@ class RoleManager {
 		globalGameHistory.restoreState();
 		if (killedPlayers[0] == 0) {killedPlayers.splice(0,1);}
 		let sh_id = globalGameState.getPlayersWithRole("Schattenwolf")[0];
-		if (!sh_id) {
+		if (sh_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1342,7 +1348,10 @@ class RoleManager {
 	*/
 	pig(iteration) {
 		let pig_id = globalGameState.getPlayersWithRole("Schwein")[0];
-		if (!pig_id) {
+		if (globalGameState.gameVariables["gameStarting"] == true) {
+			pig_id = 0;
+		}
+		if (pig_id == 0) {
 			globalGameState.advanceState();
 			return;
 		}
@@ -1395,7 +1404,6 @@ class RoleManager {
 		let sick_id = globalGameState.getPlayersWithRole("Räudiger Wolf")[0];
 		let firstWerewolfDead = globalGameState.gameVariables["firstWerewolfDead"] == true;
 		if (globalGameState.gameVariables["gameStarting"] == true) {
-			delete globalGameState.gameVariables["gameStarting"];
 			sick_id = 0;
 		}
 		if (sick_id == 0) {
@@ -1446,8 +1454,8 @@ class RoleManager {
 				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Spieler mit dem Schweigetrank ist leider schon tot.", ["Weiter"], [-1]);
 			} else if (pot.hasProperty("roleEaten")) {
 				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Schweigetrank wurde gefressen!", ["Weiter"], [-1]);
-			} else if (pot.hasProperty("silenceUsedTwice")) {
-				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Schweigetrank wurde bereits zweimal eingesetzt.", ["Weiter"], [-1]);
+			} else if (pot.hasProperty("silenceUsed")) {
+				updateGameScreenUI("Schweigetrank ("+pot.name+")", flavortext+"Der Schweigetrank wurde bereits eingesetzt.", ["Weiter"], [-1]);
 			} else {
 				const alive = globalGameState.getPlayersWithProperty("dead", true);
 				const names = [];
@@ -1462,12 +1470,9 @@ class RoleManager {
 			let id = Number(globalGameScreenSelectedBtnID_UI);
 			if (id != -1) {
 				globalGameState.gameVariables["silenced"] = id;
-				if (pot.hasProperty("silenceUsedOnce")) {
-					pot.removeProperty("silenceUsedOnce");
-					pot.addProperty("silenceUsedTwice");
-				} else {
-					pot.addProperty("silenceUsedOnce");
-				}
+				pot.addProperty("silenceUsed");
+			} else {
+				delete globalGameState.gameVariables["silenced"];
 			}
 			globalGameState.advanceState();
 		}

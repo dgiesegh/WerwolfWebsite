@@ -9,7 +9,7 @@ Dorfbewohner:
 - Dorfschlampe:     Kann jede Nacht bei sich zu Hause oder bei einem anderen Spieler verbringen. Ist sie nicht zu Haus, können Werwölfe und Hexe sie nicht direkt töten.
                     Schläft sie aber bei einem Werwolf, so stirbt sie (egal ob das Haus gesegnet ist). Wird die Person, bei der sie schläft, von den Werwölfen oder der Hexe
 				    erfolgreich getötet, stirbt sie auch. Kann nicht zweimal hintereinander bei der gleichen Person schlafen (aber zu Haus).
-- Beamter:          Darf jede Nacht die Nebenrolle eines lebenden Spielers erfahren.
+- Beamter:          Darf jede Nacht die Nebenrolle eines lebenden Spielers für alle offen aufdecken.
 - Seher:            Darf jede Nacht die Zugehörigkeit (Werwölfe/Dorfbewohner) eines lebenden Spielers erfahren.
 - Fieselotte:       Wenn die Fieselotte stirbt, kreischt sie laut und verrät dadurch ihre Rolle.
 + Obdachloser:      Muss jede Nacht bei einem anderen Spieler verbringen, und kann daher nicht direkt von den Werwölfen oder der Hexe getötet werden. 
@@ -39,17 +39,18 @@ Nebenrollen:
                     Stirbt der eine Spieler aus egal welchem Grund, stirbt auch der andere aus Liebeskummer. 
                     Bleiben die beiden Verliebten als letzte übrig, gewinnen sie das Spiel.
 - Armbrust:         Stirbt der Spieler mit der Armbrust aus egal welchem Grund, darf er einen weiteren Spieler mit in den Tod reißen.
-- Stärketrank:      Der Spieler mit dem Stärketrank hat ein zweites Leben (d.h. wenn er das erste mal sterben würde, stirbt er nicht).
+- Stärketrank:      Der Spieler mit dem Stärketrank kann seinen Trank einmal zu Beginn der Nacht einsetzen. Er hat dann für die Nacht und den kommenden Tag ein zweites Leben.
 - Stein & Amulett:  Stirbt der Spieler mit dem Amulett, erhält der Spieler mit dem Stein ein zweites Leben, und umgekehrt.
                     Das zweite Leben fungiert analog zum Stärketrank, gilt jedoch erst ab der nächsten Nacht / dem nächsten Tag 
                     (d.h. sterben beide in einer Nacht / an einem Tag, bekommt niemand ein zweites Leben).
 - Michi:            Der Besitzer des Hundes Michi kann seinen Hund jede Nacht an einem Spieler schnüffeln lassen, um zu erfahren, ob er menschlich riecht.
-                    Alle Spieler außer Werwölfe, Hexe und Nekromant riechen menschlich.
+                    Alle Spieler außer Werwölfe, Hexe, Obdachloser und Nekromant riechen menschlich.
 - Holzwurm:         Der Spieler mit dem Holzwurm kann jede Nacht entscheiden, ob er den Wurm freilassen möchte.
                     Falls ja, bricht am nächsten Tag der Galgen im Zuge der Hinrichtung (d.h. der Gehängte überlebt). Einmal freigelassen, ist der Holzwurm für immer fort.
 - Leichenfledderer: Kann einmal in der Nacht die Nebenrolle eines bereits gestorbenen Spielers stehlen. Die Nebenrolle wird dadurch zurückgesetzt.
                     Liebes-/Hasstrank können nicht gestohlen werden.
-- Dichter:          Muss während der täglichen Diskussion dichten.
+- Dichter:          Muss/darf während der täglichen Diskussion dichten. 
+                    Wenn er einen (im Ermessen des Spielleiters) hervorragenden Reim verwendet, bekommt er eine zweite Stimme bei der Abstimmung.
 + Pestkranker:      Stirbt er tagsüber (Hinrichtung), dann können die Dorfbewohner in der nächsten Nacht ihre Fähigkeiten nicht verwenden.
                     Stirbt er dagegen nachts, können die Werwölfe in der folgenden Nacht ihre Fähigkeiten nicht nutzen.
 + Hasstrank:        Kann in der ersten Nacht zwei Spieler auswählen, die sich hassen.
@@ -57,6 +58,6 @@ Nebenrollen:
                     Endet das Spiel vorher und sind beide noch am Leben, sterben beide ebenfalls (und gewinnen damit nicht mit der Seite, zu der sie gehören).
 - Adeliger:         Wenn er hingerichtet werden soll, enthüllt er seinen Status als Adeliger und kann sich damit einmal vor der Hinrichtung schützen.
 + Ludwig:           Ludwig ist ein furchteinflößender Kater, der einmal nachts den ersten Angreifer des Spielers abwehrt (z.B. Werwölfe, Hexe).
-- Schweigetrank:    Kann zweimal seinen Trank nutzen, um einen Spieler verstummen zu lassen. Dieser darf in der kommenden Diskussion nicht sprechen.
+- Schweigetrank:    Kann einmal seinen Trank nutzen, um einen Spieler tagsüber verstummen zu lassen. Dieser darf in der kommenden Diskussion nicht sprechen oder abstimmen.
 + Starker Magen:    Tränke haben keinen Effekt auf diesen Spieler (Heil- und Todestrank, Schweigetrank, Liebes- und Hasstrank).
                     Hass und Liebe sind dann einseitig (d.h. z.B. stirbt dieser Spieler nicht, wenn sein Liebespartner stirbt, aber andersherum).
